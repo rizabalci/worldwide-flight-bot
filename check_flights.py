@@ -42,7 +42,32 @@ TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 ROLLING_WINDOW_DAYS = int(os.environ.get("ROLLING_WINDOW_DAYS", "14"))
 ROLLING_DROP_PCT = float(os.environ.get("ROLLING_DROP_PCT", "0.20"))
+# A fare must be at least this far UNDER target to count as a "below target" hit.
+# Kills barely-under noise like "Athens €64 vs target €65". 0.10 = must be >=10%
+# under target. Set 0.0 to alert on anything at or below target (old behavior).
+TARGET_MARGIN_PCT = float(os.environ.get("TARGET_MARGIN_PCT", "0.10"))
 ORIGINS = [o.strip().upper() for o in os.environ.get("ORIGINS", "VIE,BTS").split(",") if o.strip()]
+
+# Weekend / short-break mode. When WEEKEND_ONLY=true, only keep round-trips
+# matching the trip length (MIN_NIGHTS..MAX_NIGHTS) and departure days (DEP_DAYS).
+# Flip the GitHub variable WEEKEND_ONLY between "true" and "false" anytime.
+#
+#   MIN_NIGHTS / MAX_NIGHTS : trip length in NIGHTS (a Fri->Mon trip = 3 nights).
+#       3 days  = 2 nights      |  4 days = 3 nights  |  1 week = 7 nights
+#   DEP_DAYS : comma list of allowed departure weekdays, or "any".
+#       e.g. "thu,fri"  |  "fri"  |  "any"
+WEEKEND_ONLY = os.environ.get("WEEKEND_ONLY", "false").lower() == "true"
+MIN_NIGHTS = int(os.environ.get("MIN_NIGHTS", "2"))
+MAX_NIGHTS = int(os.environ.get("MAX_NIGHTS", "4"))
+
+_DAY_NAMES = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
+_dep_raw = os.environ.get("DEP_DAYS", "thu,fri").strip().lower()
+if _dep_raw in ("any", "all", ""):
+    DEP_DAYS = set(range(7))  # any day allowed
+else:
+    DEP_DAYS = {_DAY_NAMES[d.strip()] for d in _dep_raw.split(",") if d.strip() in _DAY_NAMES}
+    if not DEP_DAYS:  # fallback if the value was garbage
+        DEP_DAYS = {3, 4}
 
 # -------------------- Tier rules --------------------
 
@@ -740,6 +765,35 @@ def upcoming_months(n: int) -> list[str]:
     return months
 
 
+def trip_nights(dep: str, ret: str) -> int | None:
+    """Number of nights between departure and return (YYYY-MM-DD strings)."""
+    if not dep or not ret:
+        return None
+    try:
+        d = date.fromisoformat(dep)
+        r = date.fromisoformat(ret)
+        return (r - d).days
+    except ValueError:
+        return None
+
+
+def passes_weekend_filter(dep: str, nights: int | None) -> bool:
+    """True if this fare qualifies under the current mode.
+
+    When WEEKEND_ONLY is off, everything passes. When on, keep only trips
+    whose length is MIN_NIGHTS..MAX_NIGHTS and whose departure weekday is
+    in DEP_DAYS.
+    """
+    if not WEEKEND_ONLY:
+        return True
+    if nights is None or not (MIN_NIGHTS <= nights <= MAX_NIGHTS):
+        return False
+    try:
+        return date.fromisoformat(dep).weekday() in DEP_DAYS
+    except ValueError:
+        return False
+
+
 _pacing_seconds = 0.5  # global, increases when 429s appear
 _pacing_lock_min = 0.5
 
@@ -755,6 +809,9 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
     """
     global _pacing_seconds
     best = None
+    # In weekend mode the single cheapest fare often isn't weekend-shaped,
+    # so pull a pool of fares per month and filter through them.
+    fetch_limit = 30 if WEEKEND_ONLY else 1
     for ym in upcoming_months(cfg["months_ahead"]):
         params = {
             "origin": origin,
@@ -764,7 +821,7 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
             "one_way": cfg["one_way"],
             "direct": cfg["direct"],
             "sorting": "price",
-            "limit": 1,
+            "limit": fetch_limit,
             "token": TRAVELPAYOUTS_TOKEN,
         }
         data = None
@@ -797,15 +854,20 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
             continue
 
         if data:
-            item = data[0]
-            price = item.get("price")
-            if price is not None:
+            for item in data:
+                price = item.get("price")
+                dep = (item.get("departure_at") or "")[:10]
+                ret = (item.get("return_at") or "")[:10]
+                nights = trip_nights(dep, ret)
+                if price is None or not passes_weekend_filter(dep, nights):
+                    continue
                 if best is None or price < best["price"]:
                     best = {
                         "price": int(round(price)),
                         "airline": item.get("airline", "?"),
-                        "departure_at": (item.get("departure_at") or "")[:10],
-                        "return_at": (item.get("return_at") or "")[:10],
+                        "departure_at": dep,
+                        "return_at": ret,
+                        "nights": nights,
                         "link": AVIASALES + item.get("link", "") if item.get("link") else None,
                     }
         time.sleep(_pacing_seconds)
@@ -887,6 +949,39 @@ def send_telegram(text: str) -> None:
         time.sleep(0.5)  # avoid Telegram's per-chat send rate limit
 
 
+# Airlines whose advertised fares are almost always hand-luggage only.
+# A hint, NOT a guarantee -- bundles vary, so the label is marked "~cabin?".
+_HAND_LUGGAGE_CARRIERS = {
+    "FR",  # Ryanair
+    "RK",  # Ryanair UK
+    "W6",  # Wizz Air
+    "W4",  # Wizz Air Malta
+    "W9",  # Wizz Air UK
+    "U2",  # easyJet
+    "EC",  # easyJet Europe
+    "VY",  # Vueling
+    "EW",  # Eurowings
+    "PC",  # Pegasus
+    "FY",  # Firefly
+    "0B",  # Blue Air
+    "HV",  # Transavia
+    "TO",  # Transavia France
+    "DY",  # Norwegian
+    "F9",  # Frontier
+    "NK",  # Spirit
+    "JU",  # Air Serbia (basic fares)
+    "WZZ", # Wizz (alt code)
+}
+
+
+def baggage_hint(airline: str) -> str:
+    """Best-effort baggage note. The API doesn't return baggage data, so this
+    is inferred from the airline alone and always flagged as unverified."""
+    if airline and airline.upper() in _HAND_LUGGAGE_CARRIERS:
+        return " · <i>~cabin?</i>"
+    return ""
+
+
 def fmt_deal(d: dict) -> str:
     arrow = d["cfg"]["arrow"]
     city = d["city"]
@@ -897,12 +992,18 @@ def fmt_deal(d: dict) -> str:
     ret = d["return_at"]
     air = d["airline"]
     when = f"{dep} → {ret}" if ret else dep
+    nights = d.get("nights")
+    if nights:
+        when += f" ({nights} night{'s' if nights != 1 else ''})"
     tag = ""
+    if d.get("all_time_low"):
+        lo = d.get("prev_lo")
+        tag += f"  🏆 lowest ever" + (f" (was €{int(lo)})" if lo else "")
     if d["below_target"]:
         tag += f"  (target €{target})"
     if d["big_drop"]:
         tag += f"  ↓ from €{int(d['avg'])} avg"
-    line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}"
+    line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}{baggage_hint(air)}"
     if d["link"]:
         line += f' · <a href="{d["link"]}">book</a>'
     return line
@@ -922,19 +1023,34 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
                 continue
             checked += 1
             price = cheapest["price"]
-            series = history.get(key, [])
+            entry = history.get(key, {})
+            # Back-compat: old history stored a bare list; wrap it.
+            if isinstance(entry, list):
+                entry = {"series": entry, "lo": None}
+            series = entry.get("series", [])
+            prev_lo = entry.get("lo")
+
             avg = rolling_avg(series)
-            below_target = price <= target
+            # "Below target" now requires a real margin, not a €1 squeak under.
+            below_target = price <= target * (1 - TARGET_MARGIN_PCT)
             big_drop = avg is not None and price <= avg * (1 - ROLLING_DROP_PCT)
+            # All-time low: cheaper than anything seen before for this route.
+            # Needs some history first, else day-one would flag everything.
+            all_time_low = (
+                prev_lo is not None
+                and len(series) >= 3
+                and price < prev_lo
+            )
 
             print(
                 f"  [{cfg['name']}] {origin}->{dest} {city}: €{price}"
                 f" | target €{target}"
                 f" | avg {('€%d' % avg) if avg else 'n/a'}"
-                f" | {'HIT' if (below_target or big_drop) else '-'}"
+                f" | lo {('€%d' % prev_lo) if prev_lo else 'n/a'}"
+                f" | {'HIT' if (below_target or big_drop or all_time_low) else '-'}"
             )
 
-            if below_target or big_drop:
+            if below_target or big_drop or all_time_low:
                 deals.append({
                     "tier": cfg["name"],
                     "cfg": cfg,
@@ -944,17 +1060,25 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
                     "price": price,
                     "target": target,
                     "avg": avg,
+                    "prev_lo": prev_lo,
                     "airline": cheapest["airline"],
                     "departure_at": cheapest["departure_at"],
                     "return_at": cheapest["return_at"],
+                    "nights": cheapest.get("nights"),
                     "link": cheapest["link"],
                     "below_target": below_target,
                     "big_drop": big_drop,
+                    "all_time_low": all_time_low,
                     "score": (target - price) / target,
                 })
 
+            # Update history: append today, trim series, track all-time low.
             series.append({"date": today, "price": price})
-            history[key] = series[-(ROLLING_WINDOW_DAYS * 2):]
+            new_lo = price if prev_lo is None else min(prev_lo, price)
+            history[key] = {
+                "series": series[-(ROLLING_WINDOW_DAYS * 2):],
+                "lo": new_lo,
+            }
     return deals, checked
 
 
@@ -962,11 +1086,24 @@ def build_digest(deals: list, header: str) -> str | None:
     """Build a Telegram digest for one tier. Returns None if no deals."""
     if not deals:
         return None
-    big = sorted([d for d in deals if d["big_drop"]],
+    # Priority order: all-time lows first, then big drops, then below-target.
+    # Each deal appears once, in its highest-priority bucket.
+    lows = sorted([d for d in deals if d.get("all_time_low")],
+                  key=lambda d: d["score"], reverse=True)
+    low_keys = {(d["origin"], d["dest"]) for d in lows}
+    big = sorted([d for d in deals
+                  if d["big_drop"] and (d["origin"], d["dest"]) not in low_keys],
                  key=lambda d: d["score"], reverse=True)
-    cheap = sorted([d for d in deals if d["below_target"] and not d["big_drop"]],
+    big_keys = low_keys | {(d["origin"], d["dest"]) for d in big}
+    cheap = sorted([d for d in deals
+                    if d["below_target"] and (d["origin"], d["dest"]) not in big_keys],
                    key=lambda d: d["score"], reverse=True)
     lines = [header, ""]
+    if lows:
+        lines.append("🏆 <b>All-time lows</b>")
+        lines += [fmt_deal(d) for d in lows]
+        if big or cheap:
+            lines.append("")
     if big:
         lines.append("🔥 <b>Big drops vs recent average</b>")
         lines += [fmt_deal(d) for d in big]
@@ -975,6 +1112,13 @@ def build_digest(deals: list, header: str) -> str | None:
     if cheap:
         lines.append("✅ <b>Below target</b>")
         lines += [fmt_deal(d) for d in cheap]
+    # Footer: only show the baggage reminder if any deal involves a hinted carrier.
+    if any(d["airline"].upper() in _HAND_LUGGAGE_CARRIERS for d in deals):
+        lines.append("")
+        lines.append(
+            "<i>~cabin? = budget carrier, likely hand-luggage only. "
+            "Always confirm baggage at booking.</i>"
+        )
     return "\n".join(lines).strip()
 
 
@@ -986,11 +1130,24 @@ def main() -> int:
     long_deals, long_checked = scan_tier(LONG_HAUL, LONG_HAUL_DESTINATIONS, history, today)
     save_history(history)
 
+    if WEEKEND_ONLY:
+        _rev = {v: k for k, v in _DAY_NAMES.items()}
+        if DEP_DAYS == set(range(7)):
+            dep_str = "any day"
+        else:
+            dep_str = "/".join(_rev[d].capitalize() for d in sorted(DEP_DAYS))
+        if MIN_NIGHTS == MAX_NIGHTS:
+            len_str = f"{MIN_NIGHTS} nights"
+        else:
+            len_str = f"{MIN_NIGHTS}-{MAX_NIGHTS} nights"
+        mode_label = f" · {len_str}, {dep_str} dep"
+    else:
+        mode_label = " (round-trip)"
     short_digest = build_digest(
-        short_deals, f"<b>🇪🇺 Europe deal scan — {today}</b> (round-trip)"
+        short_deals, f"<b>🇪🇺 Europe deal scan — {today}</b>{mode_label}"
     )
     long_digest = build_digest(
-        long_deals, f"<b>🌍 Worldwide deal scan — {today}</b> (round-trip)"
+        long_deals, f"<b>🌍 Worldwide deal scan — {today}</b>{mode_label}"
     )
 
     sent = 0
