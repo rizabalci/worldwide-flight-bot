@@ -1,1 +1,1532 @@
-{}
+{
+  "VIE-LHR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 222
+    }
+  ],
+  "VIE-STN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 90
+    }
+  ],
+  "VIE-MAN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 131
+    }
+  ],
+  "VIE-EDI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 399
+    }
+  ],
+  "VIE-DUB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 139
+    }
+  ],
+  "VIE-FCO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 39
+    }
+  ],
+  "VIE-MXP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 37
+    }
+  ],
+  "VIE-BGY-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 35
+    }
+  ],
+  "VIE-LIN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 58
+    }
+  ],
+  "VIE-BLQ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 206
+    }
+  ],
+  "VIE-FLR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 356
+    }
+  ],
+  "VIE-VCE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 34
+    }
+  ],
+  "VIE-NAP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 59
+    }
+  ],
+  "VIE-BRI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 68
+    }
+  ],
+  "VIE-SUF-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 165
+    }
+  ],
+  "VIE-CTA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 52
+    }
+  ],
+  "VIE-PMO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 55
+    }
+  ],
+  "VIE-OLB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 94
+    }
+  ],
+  "VIE-CAG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 104
+    }
+  ],
+  "VIE-BCN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 62
+    }
+  ],
+  "VIE-MAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 125
+    }
+  ],
+  "VIE-VLC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 127
+    }
+  ],
+  "VIE-ALC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 126
+    }
+  ],
+  "VIE-AGP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 93
+    }
+  ],
+  "VIE-PMI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 43
+    }
+  ],
+  "VIE-IBZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 63
+    }
+  ],
+  "VIE-TFS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 189
+    }
+  ],
+  "VIE-LPA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 472
+    }
+  ],
+  "VIE-LIS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 176
+    }
+  ],
+  "VIE-OPO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 135
+    }
+  ],
+  "VIE-FNC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 717
+    }
+  ],
+  "VIE-CDG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 193
+    }
+  ],
+  "VIE-ORY-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 146
+    }
+  ],
+  "VIE-BVA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 87
+    }
+  ],
+  "VIE-NCE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 193
+    }
+  ],
+  "VIE-MRS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 97
+    }
+  ],
+  "VIE-LYS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 242
+    }
+  ],
+  "VIE-BIA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 307
+    }
+  ],
+  "VIE-AMS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 233
+    }
+  ],
+  "VIE-EIN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 170
+    }
+  ],
+  "VIE-BRU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 63
+    }
+  ],
+  "VIE-CRL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 63
+    }
+  ],
+  "VIE-LUX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 242
+    }
+  ],
+  "VIE-BER-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 239
+    }
+  ],
+  "VIE-HAM-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 171
+    }
+  ],
+  "VIE-MUC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 401
+    }
+  ],
+  "VIE-FRA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 156
+    }
+  ],
+  "VIE-DUS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 184
+    }
+  ],
+  "VIE-CGN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 122
+    }
+  ],
+  "VIE-STR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 188
+    }
+  ],
+  "VIE-LEJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 472
+    }
+  ],
+  "VIE-HAJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 312
+    }
+  ],
+  "VIE-ZRH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 185
+    }
+  ],
+  "VIE-GVA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 280
+    }
+  ],
+  "VIE-PRG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 195
+    }
+  ],
+  "VIE-KSC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 404
+    }
+  ],
+  "VIE-WAW-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 53
+    }
+  ],
+  "VIE-KRK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 37
+    }
+  ],
+  "VIE-OTP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 64
+    }
+  ],
+  "VIE-IAS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 364
+    }
+  ],
+  "VIE-SOF-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 119
+    }
+  ],
+  "VIE-VAR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 404
+    }
+  ],
+  "VIE-BOJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 142
+    }
+  ],
+  "VIE-ZAG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 249
+    }
+  ],
+  "VIE-SPU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 165
+    }
+  ],
+  "VIE-DBV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 38
+    }
+  ],
+  "VIE-ZAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 31
+    }
+  ],
+  "VIE-PUY-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 44
+    }
+  ],
+  "VIE-BEG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 160
+    }
+  ],
+  "VIE-SJJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 202
+    }
+  ],
+  "VIE-BNX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 66
+    }
+  ],
+  "VIE-TGD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 159
+    }
+  ],
+  "VIE-TIV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 270
+    }
+  ],
+  "VIE-TIA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 113
+    }
+  ],
+  "VIE-PRN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 179
+    }
+  ],
+  "VIE-ATH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 64
+    }
+  ],
+  "VIE-SKG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 126
+    }
+  ],
+  "VIE-HER-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 150
+    }
+  ],
+  "VIE-CHQ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 79
+    }
+  ],
+  "VIE-RHO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 121
+    }
+  ],
+  "VIE-JTR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 92
+    }
+  ],
+  "VIE-JMK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 181
+    }
+  ],
+  "VIE-CFU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 177
+    }
+  ],
+  "VIE-KGS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 56
+    }
+  ],
+  "VIE-ZTH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 185
+    }
+  ],
+  "VIE-LCA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 112
+    }
+  ],
+  "VIE-PFO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 61
+    }
+  ],
+  "VIE-MLA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 63
+    }
+  ],
+  "VIE-CPH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 87
+    }
+  ],
+  "VIE-ARN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 115
+    }
+  ],
+  "VIE-OSL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 203
+    }
+  ],
+  "VIE-HEL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 128
+    }
+  ],
+  "VIE-KEF-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 515
+    }
+  ],
+  "VIE-TLL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 232
+    }
+  ],
+  "VIE-RIX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 285
+    }
+  ],
+  "VIE-VNO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 74
+    }
+  ],
+  "BTS-STN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 113
+    }
+  ],
+  "BTS-LTN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 71
+    }
+  ],
+  "BTS-DUB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 88
+    }
+  ],
+  "BTS-FCO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 24
+    }
+  ],
+  "BTS-CIA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 38
+    }
+  ],
+  "BTS-MXP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 33
+    }
+  ],
+  "BTS-PSA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 32
+    }
+  ],
+  "BTS-NAP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 29
+    }
+  ],
+  "BTS-BRI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 87
+    }
+  ],
+  "BTS-SUF-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 53
+    }
+  ],
+  "BTS-PMO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 64
+    }
+  ],
+  "BTS-TPS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 42
+    }
+  ],
+  "BTS-BCN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 34
+    }
+  ],
+  "BTS-ALC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 56
+    }
+  ],
+  "BTS-AGP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 77
+    }
+  ],
+  "BTS-NCE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 52
+    }
+  ],
+  "BTS-BER-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 31
+    }
+  ],
+  "BTS-WAW-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 24
+    }
+  ],
+  "BTS-GDN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 36
+    }
+  ],
+  "BTS-OTP-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 41
+    }
+  ],
+  "BTS-VAR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 49
+    }
+  ],
+  "BTS-BOJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 270
+    }
+  ],
+  "BTS-ZAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 40
+    }
+  ],
+  "BTS-TZL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 18
+    }
+  ],
+  "BTS-TGD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 31
+    }
+  ],
+  "BTS-TIA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 31
+    }
+  ],
+  "BTS-PRN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 107
+    }
+  ],
+  "BTS-ATH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 78
+    }
+  ],
+  "BTS-SKG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 54
+    }
+  ],
+  "BTS-JSI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 79
+    }
+  ],
+  "BTS-CFU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 67
+    }
+  ],
+  "BTS-ZTH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 345
+    }
+  ],
+  "BTS-LCA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 147
+    }
+  ],
+  "BTS-PFO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 91
+    }
+  ],
+  "BTS-MLA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 60
+    }
+  ],
+  "BTS-OSL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 67
+    }
+  ],
+  "VIE-DXB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 391
+    }
+  ],
+  "VIE-AUH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 355
+    }
+  ],
+  "VIE-SHJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 550
+    }
+  ],
+  "VIE-JED-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 500
+    }
+  ],
+  "VIE-MED-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 522
+    }
+  ],
+  "VIE-TLV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 301
+    }
+  ],
+  "VIE-BEY-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 429
+    }
+  ],
+  "VIE-AMM-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 346
+    }
+  ],
+  "VIE-BGW-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 482
+    }
+  ],
+  "VIE-EBL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 342
+    }
+  ],
+  "VIE-IKA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 323
+    }
+  ],
+  "VIE-MHD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 542
+    }
+  ],
+  "VIE-CAI-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 288
+    }
+  ],
+  "VIE-HRG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 234
+    }
+  ],
+  "VIE-SSH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 165
+    }
+  ],
+  "VIE-RAK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 134
+    }
+  ],
+  "VIE-CMN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 319
+    }
+  ],
+  "VIE-TUN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 273
+    }
+  ],
+  "VIE-ALG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 160
+    }
+  ],
+  "VIE-TBS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 278
+    }
+  ],
+  "VIE-KUT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 161
+    }
+  ],
+  "VIE-BUS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 397
+    }
+  ],
+  "VIE-EVN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 149
+    }
+  ],
+  "VIE-GYD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 247
+    }
+  ],
+  "VIE-TAS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 439
+    }
+  ],
+  "VIE-SKD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 513
+    }
+  ],
+  "VIE-ALA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 445
+    }
+  ],
+  "VIE-NQZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 450
+    }
+  ],
+  "VIE-DYU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 628
+    }
+  ],
+  "VIE-NRT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 620
+    }
+  ],
+  "VIE-HND-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 706
+    }
+  ],
+  "VIE-KIX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 968
+    }
+  ],
+  "VIE-ICN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 709
+    }
+  ],
+  "VIE-HKG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 514
+    }
+  ],
+  "VIE-PVG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 613
+    }
+  ],
+  "VIE-PEK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 575
+    }
+  ],
+  "VIE-CAN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 580
+    }
+  ],
+  "VIE-SYX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1021
+    }
+  ],
+  "VIE-BKK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 533
+    }
+  ],
+  "VIE-DMK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 783
+    }
+  ],
+  "VIE-HKT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 564
+    }
+  ],
+  "VIE-USM-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 873
+    }
+  ],
+  "VIE-KBV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 681
+    }
+  ],
+  "VIE-KUL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 735
+    }
+  ],
+  "VIE-SIN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 614
+    }
+  ],
+  "VIE-DPS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 745
+    }
+  ],
+  "VIE-CGK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 683
+    }
+  ],
+  "VIE-SGN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 747
+    }
+  ],
+  "VIE-HAN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 763
+    }
+  ],
+  "VIE-DAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 810
+    }
+  ],
+  "VIE-CXR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 890
+    }
+  ],
+  "VIE-DEL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 504
+    }
+  ],
+  "VIE-BOM-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 519
+    }
+  ],
+  "VIE-BLR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 512
+    }
+  ],
+  "VIE-MAA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 588
+    }
+  ],
+  "VIE-CMB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 689
+    }
+  ],
+  "VIE-MLE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 691
+    }
+  ],
+  "VIE-DAC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 626
+    }
+  ],
+  "VIE-JFK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 581
+    }
+  ],
+  "VIE-EWR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 590
+    }
+  ],
+  "VIE-BOS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 577
+    }
+  ],
+  "VIE-IAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 742
+    }
+  ],
+  "VIE-MIA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 697
+    }
+  ],
+  "VIE-IAH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 880
+    }
+  ],
+  "VIE-LAS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 930
+    }
+  ],
+  "VIE-LAX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 513
+    }
+  ],
+  "VIE-SFO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 567
+    }
+  ],
+  "VIE-PDX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 736
+    }
+  ],
+  "VIE-YYZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 492
+    }
+  ],
+  "VIE-YHZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 506
+    }
+  ],
+  "VIE-YVR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 680
+    }
+  ],
+  "VIE-MEX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1184
+    }
+  ],
+  "VIE-PUJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 979
+    }
+  ],
+  "VIE-GRU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 886
+    }
+  ],
+  "VIE-GIG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 763
+    }
+  ],
+  "VIE-EZE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 876
+    }
+  ],
+  "VIE-LIM-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1003
+    }
+  ],
+  "VIE-BOG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1225
+    }
+  ],
+  "VIE-NBO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 535
+    }
+  ],
+  "VIE-MBA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 512
+    }
+  ],
+  "VIE-ZNZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 878
+    }
+  ],
+  "VIE-EBB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 667
+    }
+  ],
+  "VIE-KGL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 829
+    }
+  ],
+  "VIE-ADD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 566
+    }
+  ],
+  "VIE-WDH-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1295
+    }
+  ],
+  "VIE-TNR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1115
+    }
+  ],
+  "VIE-MRU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 861
+    }
+  ],
+  "VIE-SEZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 810
+    }
+  ],
+  "VIE-SYD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 828
+    }
+  ],
+  "VIE-AKL-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1307
+    }
+  ],
+  "VIE-BNA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 760
+    }
+  ],
+  "VIE-NKC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 801
+    }
+  ],
+  "BTS-DXB-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 482
+    }
+  ],
+  "BTS-TLV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 155
+    }
+  ],
+  "BTS-HRG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 275
+    }
+  ],
+  "BTS-TBS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 269
+    }
+  ],
+  "BTS-KUT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 147
+    }
+  ],
+  "BTS-BUS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 317
+    }
+  ],
+  "BTS-EVN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 106
+    }
+  ],
+  "BTS-GYD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 408
+    }
+  ],
+  "BTS-TAS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 504
+    }
+  ],
+  "BTS-SKD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 699
+    }
+  ],
+  "BTS-ALA-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 498
+    }
+  ],
+  "BTS-NQZ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 561
+    }
+  ],
+  "BTS-DYU-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 672
+    }
+  ],
+  "BTS-NRT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 961
+    }
+  ],
+  "BTS-HND-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 983
+    }
+  ],
+  "BTS-KIX-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 862
+    }
+  ],
+  "BTS-PVG-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 726
+    }
+  ],
+  "BTS-PEK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 758
+    }
+  ],
+  "BTS-CAN-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 820
+    }
+  ],
+  "BTS-BKK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 790
+    }
+  ],
+  "BTS-HKT-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 840
+    }
+  ],
+  "BTS-DPS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1000
+    }
+  ],
+  "BTS-DAD-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 832
+    }
+  ],
+  "BTS-MLE-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 678
+    }
+  ],
+  "BTS-JFK-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 721
+    }
+  ],
+  "BTS-EWR-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1067
+    }
+  ],
+  "BTS-PUJ-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 1120
+    }
+  ],
+  "BTS-NBO-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 872
+    }
+  ],
+  "BTS-LOS-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 833
+    }
+  ],
+  "BTS-ABV-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 802
+    }
+  ],
+  "BTS-NKC-rt": [
+    {
+      "date": "2026-05-29",
+      "price": 709
+    }
+  ]
+}
