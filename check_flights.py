@@ -740,8 +740,20 @@ def upcoming_months(n: int) -> list[str]:
     return months
 
 
+_pacing_seconds = 0.5  # global, increases when 429s appear
+_pacing_lock_min = 0.5
+
+
 def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
-    """Cheapest fare origin->destination under the tier's rules."""
+    """Cheapest fare origin->destination under the tier's rules.
+
+    API quirks of Travelpayouts at this scale:
+      * 429 Too Many Requests   -> globally slow down for the rest of the run,
+                                   skip this month's data point (don't retry).
+                                   Retrying makes the rate limit worse.
+      * 400 Bad Request         -> route+month not indexed, skip silently.
+    """
+    global _pacing_seconds
     best = None
     for ym in upcoming_months(cfg["months_ahead"]):
         params = {
@@ -755,6 +767,7 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
             "limit": 1,
             "token": TRAVELPAYOUTS_TOKEN,
         }
+        data = None
         try:
             r = requests.get(
                 API_BASE,
@@ -762,27 +775,40 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
                 headers={"X-Access-Token": TRAVELPAYOUTS_TOKEN},
                 timeout=30,
             )
+            if r.status_code == 429:
+                # Rate limited: slow the whole run by 0.5s and move on.
+                # One missed data point is fine; retrying makes it worse.
+                _pacing_seconds = min(_pacing_seconds + 0.5, 5.0)
+                print(
+                    f"  ~ {origin}->{destination} {ym}: 429, pacing -> {_pacing_seconds:.1f}s",
+                    file=sys.stderr,
+                )
+                time.sleep(_pacing_seconds)
+                continue
+            if r.status_code == 400:
+                # Route/month not indexed -- expected for sparse routes.
+                time.sleep(_pacing_seconds)
+                continue
             r.raise_for_status()
             data = r.json().get("data", [])
         except Exception as e:  # noqa: BLE001
             print(f"  ! {origin}->{destination} {ym}: API error {e}", file=sys.stderr)
+            time.sleep(_pacing_seconds)
             continue
 
-        if not data:
-            continue
-        item = data[0]
-        price = item.get("price")
-        if price is None:
-            continue
-        if best is None or price < best["price"]:
-            best = {
-                "price": int(round(price)),
-                "airline": item.get("airline", "?"),
-                "departure_at": (item.get("departure_at") or "")[:10],
-                "return_at": (item.get("return_at") or "")[:10],
-                "link": AVIASALES + item.get("link", "") if item.get("link") else None,
-            }
-        time.sleep(0.2)
+        if data:
+            item = data[0]
+            price = item.get("price")
+            if price is not None:
+                if best is None or price < best["price"]:
+                    best = {
+                        "price": int(round(price)),
+                        "airline": item.get("airline", "?"),
+                        "departure_at": (item.get("departure_at") or "")[:10],
+                        "return_at": (item.get("return_at") or "")[:10],
+                        "link": AVIASALES + item.get("link", "") if item.get("link") else None,
+                    }
+        time.sleep(_pacing_seconds)
     return best
 
 
