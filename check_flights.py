@@ -838,7 +838,8 @@ def rolling_avg(prices: list[dict]) -> float | None:
 
 # -------------------- Telegram --------------------
 
-def send_telegram(text: str) -> None:
+def _post_telegram(text: str) -> None:
+    """Send one message to Telegram (assumes text is already under the limit)."""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -850,6 +851,40 @@ def send_telegram(text: str) -> None:
     if not r.ok:
         print(f"Telegram error {r.status_code}: {r.text}", file=sys.stderr)
         r.raise_for_status()
+
+
+def send_telegram(text: str) -> None:
+    """Send a message to Telegram, splitting into chunks if over the limit.
+
+    Telegram caps messages at 4096 characters. On day one (or any busy day)
+    a digest can exceed that, so we split on line boundaries -- never mid-deal --
+    and send sequentially with a continuation marker.
+    """
+    LIMIT = 3500  # safety margin under Telegram's 4096 hard cap
+    if len(text) <= LIMIT:
+        _post_telegram(text)
+        return
+
+    lines = text.split("\n")
+    chunk: list[str] = []
+    size = 0
+    chunks: list[str] = []
+    for line in lines:
+        # +1 for the newline that will rejoin them
+        if size + len(line) + 1 > LIMIT and chunk:
+            chunks.append("\n".join(chunk))
+            chunk = []
+            size = 0
+        chunk.append(line)
+        size += len(line) + 1
+    if chunk:
+        chunks.append("\n".join(chunk))
+
+    total = len(chunks)
+    for i, c in enumerate(chunks, 1):
+        suffix = f"\n\n<i>(part {i}/{total})</i>" if total > 1 else ""
+        _post_telegram(c + suffix)
+        time.sleep(0.5)  # avoid Telegram's per-chat send rate limit
 
 
 def fmt_deal(d: dict) -> str:
