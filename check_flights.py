@@ -441,6 +441,11 @@ SHORT_HAUL_DESTINATIONS = {
     "VNO": ("Vilnius", 48),
     "KUN": ("Kaunas", 55),
     "PLQ": ("Palanga", 75),
+    # --- Turkey (coastal/holiday; Istanbul covered by separate bot) ---
+    "AYT": ("Antalya", 70),
+    "ADB": ("Izmir", 70),
+    "BJV": ("Bodrum", 90),
+    "DLM": ("Dalaman", 90),
 }
 
 # -------------------- Long-haul destinations (round-trip EUR, stops OK) ---------
