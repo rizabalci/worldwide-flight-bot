@@ -40,19 +40,39 @@ TRAVELPAYOUTS_TOKEN = os.environ["TRAVELPAYOUTS_TOKEN"]
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-ROLLING_WINDOW_DAYS = int(os.environ.get("ROLLING_WINDOW_DAYS", "14"))
-ROLLING_DROP_PCT = float(os.environ.get("ROLLING_DROP_PCT", "0.20"))
+
+def env_int(name: str, default: int) -> int:
+    """Read an int env var. Empty string or unset -> default.
+    (GitHub Actions passes unset repo variables as '', which int() rejects.)"""
+    v = os.environ.get(name, "").strip()
+    try:
+        return int(v) if v else default
+    except ValueError:
+        return default
+
+
+def env_float(name: str, default: float) -> float:
+    """Read a float env var. Empty string or unset -> default."""
+    v = os.environ.get(name, "").strip()
+    try:
+        return float(v) if v else default
+    except ValueError:
+        return default
+
+
+ROLLING_WINDOW_DAYS = env_int("ROLLING_WINDOW_DAYS", 14)
+ROLLING_DROP_PCT = env_float("ROLLING_DROP_PCT", 0.20)
 # A fare must be at least this far UNDER target to count as a "below target" hit.
 # Kills barely-under noise like "Athens €64 vs target €65". 0.10 = must be >=10%
 # under target. Set 0.0 to alert on anything at or below target (old behavior).
-TARGET_MARGIN_PCT = float(os.environ.get("TARGET_MARGIN_PCT", "0.10"))
-ORIGINS = [o.strip().upper() for o in os.environ.get("ORIGINS", "VIE,BTS").split(",") if o.strip()]
+TARGET_MARGIN_PCT = env_float("TARGET_MARGIN_PCT", 0.10)
+ORIGINS = [o.strip().upper() for o in os.environ.get("ORIGINS", "").split(",") if o.strip()] or ["VIE", "BTS"]
 
 # Watchlist: routes you want to SEE on every run, even when not a deal.
 # Comma-separated IATA codes. The bot shows each one's current cheapest fare
 # in a "👀 Watching" section, and flags it if it also clears its deal target.
 # Set/extend via the GitHub variable WATCHLIST, e.g. "DPS,NRT,JFK".
-WATCHLIST = [c.strip().upper() for c in os.environ.get("WATCHLIST", "DPS").split(",") if c.strip()]
+WATCHLIST = [c.strip().upper() for c in os.environ.get("WATCHLIST", "").split(",") if c.strip()] or ["DPS"]
 # How the watchlist measures "cheapest": respects the same trip-length caps as
 # normal scanning so it won't show a watchlist price for a 23-night trip.
 
@@ -65,8 +85,8 @@ WATCHLIST = [c.strip().upper() for c in os.environ.get("WATCHLIST", "DPS").split
 #   DEP_DAYS : comma list of allowed departure weekdays, or "any".
 #       e.g. "thu,fri"  |  "fri"  |  "any"
 WEEKEND_ONLY = os.environ.get("WEEKEND_ONLY", "false").lower() == "true"
-MIN_NIGHTS = int(os.environ.get("MIN_NIGHTS", "2"))
-MAX_NIGHTS = int(os.environ.get("MAX_NIGHTS", "4"))
+MIN_NIGHTS = env_int("MIN_NIGHTS", 2)
+MAX_NIGHTS = env_int("MAX_NIGHTS", 4)
 
 _DAY_NAMES = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
 _dep_raw = os.environ.get("DEP_DAYS", "thu,fri").strip().lower()
@@ -87,10 +107,10 @@ SHORT_HAUL = {
     "trip_type": "rt",
     "one_way": "false",
     "direct": "true",
-    "months_ahead": int(os.environ.get("SHORT_HAUL_MONTHS", "4")),
+    "months_ahead": env_int("SHORT_HAUL_MONTHS", 4),
     # Never surface trips longer than this, even in normal mode. Short European
     # hops longer than a week are rarely what you want.
-    "max_nights": int(os.environ.get("SHORT_HAUL_MAX_NIGHTS", "7")),
+    "max_nights": env_int("SHORT_HAUL_MAX_NIGHTS", 7),
 }
 
 LONG_HAUL = {
@@ -101,9 +121,9 @@ LONG_HAUL = {
     "trip_type": "rt",
     "one_way": "false",
     "direct": "false",
-    "months_ahead": int(os.environ.get("LONG_HAUL_MONTHS", "6")),
+    "months_ahead": env_int("LONG_HAUL_MONTHS", 6),
     # Long-haul justifies a longer stay (the flight eats a day each way).
-    "max_nights": int(os.environ.get("LONG_HAUL_MAX_NIGHTS", "15")),
+    "max_nights": env_int("LONG_HAUL_MAX_NIGHTS", 15),
 }
 
 # -------------------- Short-haul destinations (round-trip EUR, direct) --------------------
