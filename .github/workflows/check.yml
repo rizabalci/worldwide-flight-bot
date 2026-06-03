@@ -30,19 +30,35 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ROLLING_WINDOW_DAYS: ${{ vars.ROLLING_WINDOW_DAYS }}
           ROLLING_DROP_PCT: ${{ vars.ROLLING_DROP_PCT }}
+          TARGET_MARGIN_PCT: ${{ vars.TARGET_MARGIN_PCT }}
           SHORT_HAUL_MONTHS: ${{ vars.SHORT_HAUL_MONTHS }}
           LONG_HAUL_MONTHS: ${{ vars.LONG_HAUL_MONTHS }}
+          SHORT_HAUL_MAX_NIGHTS: ${{ vars.SHORT_HAUL_MAX_NIGHTS }}
+          LONG_HAUL_MAX_NIGHTS: ${{ vars.LONG_HAUL_MAX_NIGHTS }}
           ORIGINS: ${{ vars.ORIGINS }}
+          WATCHLIST: ${{ vars.WATCHLIST }}
+          WEEKEND_ONLY: ${{ vars.WEEKEND_ONLY }}
+          MIN_NIGHTS: ${{ vars.MIN_NIGHTS }}
+          MAX_NIGHTS: ${{ vars.MAX_NIGHTS }}
+          DEP_DAYS: ${{ vars.DEP_DAYS }}
         run: python check_flights.py
 
       - name: Commit updated price history
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add price_history.json
+          git add price_history.json deals.json index.html 2>/dev/null || git add price_history.json
           if git diff --staged --quiet; then
-            echo "No price history changes to commit."
+            echo "No changes to commit."
           else
             git commit -m "Update price history $(date -u +%Y-%m-%d)"
-            git push
+            for i in 1 2 3; do
+              if git push; then
+                echo "Pushed on attempt $i."
+                break
+              fi
+              echo "Push $i failed; pulling and retrying..."
+              git pull --rebase --no-edit || git rebase --abort
+              sleep 3
+            done
           fi
