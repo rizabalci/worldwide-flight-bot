@@ -48,6 +48,14 @@ ROLLING_DROP_PCT = float(os.environ.get("ROLLING_DROP_PCT", "0.20"))
 TARGET_MARGIN_PCT = float(os.environ.get("TARGET_MARGIN_PCT", "0.10"))
 ORIGINS = [o.strip().upper() for o in os.environ.get("ORIGINS", "VIE,BTS").split(",") if o.strip()]
 
+# Watchlist: routes you want to SEE on every run, even when not a deal.
+# Comma-separated IATA codes. The bot shows each one's current cheapest fare
+# in a "👀 Watching" section, and flags it if it also clears its deal target.
+# Set/extend via the GitHub variable WATCHLIST, e.g. "DPS,NRT,JFK".
+WATCHLIST = [c.strip().upper() for c in os.environ.get("WATCHLIST", "DPS").split(",") if c.strip()]
+# How the watchlist measures "cheapest": respects the same trip-length caps as
+# normal scanning so it won't show a watchlist price for a 23-night trip.
+
 # Weekend / short-break mode. When WEEKEND_ONLY=true, only keep round-trips
 # matching the trip length (MIN_NIGHTS..MAX_NIGHTS) and departure days (DEP_DAYS).
 # Flip the GitHub variable WEEKEND_ONLY between "true" and "false" anytime.
@@ -1116,12 +1124,78 @@ def build_digest(deals: list, header: str) -> str | None:
     return "\n".join(lines).strip()
 
 
+def _tier_for(dest: str) -> tuple[dict, dict] | tuple[None, None]:
+    """Return (cfg, destinations_dict) for whichever tier a code belongs to."""
+    if dest in SHORT_HAUL_DESTINATIONS:
+        return SHORT_HAUL, SHORT_HAUL_DESTINATIONS
+    if dest in LONG_HAUL_DESTINATIONS:
+        return LONG_HAUL, LONG_HAUL_DESTINATIONS
+    return None, None
+
+
+def scan_watchlist(history: dict, today: str) -> str | None:
+    """Fetch current cheapest fare for each watchlist route and format a section
+    that always shows, regardless of whether the fare is a deal."""
+    if not WATCHLIST:
+        return None
+    rows = []
+    for dest in WATCHLIST:
+        cfg, dests = _tier_for(dest)
+        if cfg is None:
+            print(f"  [watch] {dest}: not in any tier, skipping")
+            continue
+        label, target = dests[dest]
+        # Cheapest across origins for this route.
+        best = None
+        for origin in ORIGINS:
+            c = get_cheapest(origin, dest, cfg)
+            if c and (best is None or c["price"] < best["price"]):
+                best = c
+                best["origin"] = origin
+        if best is None:
+            rows.append((dest, label, None, None, target, None))
+            continue
+        # Compare against stored all-time low for trend context.
+        key = f"{best['origin']}-{dest}-{cfg['trip_type']}"
+        entry = history.get(key, {})
+        if isinstance(entry, list):
+            entry = {"series": entry, "lo": None}
+        lo = entry.get("lo")
+        is_deal = best["price"] <= target * (1 - TARGET_MARGIN_PCT)
+        rows.append((dest, label, best, lo, target, is_deal))
+
+    if not rows:
+        return None
+    lines = [f"<b>👀 Watching — {today}</b>", ""]
+    for dest, label, best, lo, target, is_deal in rows:
+        if best is None:
+            lines.append(f"<b>{label}</b>: no fares found (target €{target})")
+            continue
+        arrow = "↔"
+        price = best["price"]
+        when = f"{best['departure_at']} → {best['return_at']}"
+        nights = best.get("nights")
+        when += f" ({nights} nights)" if nights else ""
+        flag = "  🎯 <b>DEAL</b>" if is_deal else ""
+        lo_str = f"  · lowest seen €{int(lo)}" if lo else ""
+        line = (
+            f"<b>{label}</b> {best['origin']}{arrow} <b>€{price}</b>"
+            f"  (target €{target}){flag}{lo_str}\n"
+            f"   {when} · {best['airline']}{baggage_hint(best['airline'])}"
+        )
+        if best["link"]:
+            line += f' · <a href="{best["link"]}">book</a>'
+        lines.append(line)
+    return "\n".join(lines).strip()
+
+
 def main() -> int:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     history = load_history()
 
     short_deals, short_checked = scan_tier(SHORT_HAUL, SHORT_HAUL_DESTINATIONS, history, today)
     long_deals, long_checked = scan_tier(LONG_HAUL, LONG_HAUL_DESTINATIONS, history, today)
+    watch_digest = scan_watchlist(history, today)
     save_history(history)
 
     if WEEKEND_ONLY:
@@ -1150,6 +1224,9 @@ def main() -> int:
         sent += 1
     if long_digest:
         send_telegram(long_digest)
+        sent += 1
+    if watch_digest:
+        send_telegram(watch_digest)
         sent += 1
 
     if sent == 0:
