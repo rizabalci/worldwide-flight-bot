@@ -1288,7 +1288,7 @@ def scan_watchlist(history: dict, today: str) -> str | None:
                 best = c
                 best["origin"] = origin
         if best is None:
-            rows.append((dest, label, None, None, target, None))
+            rows.append((dest, label, None, None, target, None, ""))
             continue
         # Compare against stored all-time low for trend context.
         key = f"{best['origin']}-{dest}-{cfg['trip_type']}"
@@ -1296,13 +1296,23 @@ def scan_watchlist(history: dict, today: str) -> str | None:
         if isinstance(entry, list):
             entry = {"series": entry, "lo": None}
         lo = entry.get("lo")
+        avg = rolling_avg(entry.get("series", []))
+        # Trend vs recent average: needs a few points to be meaningful.
+        trend = ""
+        if avg:
+            if best["price"] <= avg * 0.95:
+                trend = f" ↘ (avg €{int(avg)})"   # >=5% below recent avg
+            elif best["price"] >= avg * 1.05:
+                trend = f" ↗ (avg €{int(avg)})"   # >=5% above recent avg
+            else:
+                trend = f" → (avg €{int(avg)})"   # within ±5%
         is_deal = best["price"] <= target * (1 - TARGET_MARGIN_PCT)
-        rows.append((dest, label, best, lo, target, is_deal))
+        rows.append((dest, label, best, lo, target, is_deal, trend))
 
     if not rows:
         return None
     lines = [f"<b>👀 Watching — {fmt_date(today)}</b>", ""]
-    for dest, label, best, lo, target, is_deal in rows:
+    for dest, label, best, lo, target, is_deal, trend in rows:
         if best is None:
             lines.append(f"<b>{label}</b>: no fares found (target €{target})")
             continue
@@ -1314,7 +1324,7 @@ def scan_watchlist(history: dict, today: str) -> str | None:
         flag = "  🎯 <b>DEAL</b>" if is_deal else ""
         lo_str = f"  · lowest seen €{int(lo)}" if lo else ""
         line = (
-            f"<b>{label}</b> {best['origin']}{arrow} <b>€{price}</b>"
+            f"<b>{label}</b> {best['origin']}{arrow} <b>€{price}</b>{trend}"
             f"  (target €{target}){flag}{lo_str}\n"
             f"   {when} · {best['airline']}{baggage_hint(best['airline'])}"
         )
