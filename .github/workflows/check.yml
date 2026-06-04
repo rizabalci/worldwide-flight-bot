@@ -41,6 +41,7 @@ jobs:
           MIN_NIGHTS: ${{ vars.MIN_NIGHTS }}
           MAX_NIGHTS: ${{ vars.MAX_NIGHTS }}
           DEP_DAYS: ${{ vars.DEP_DAYS }}
+          HEARTBEAT: ${{ vars.HEARTBEAT }}
         run: python check_flights.py
 
       - name: Commit updated price history
