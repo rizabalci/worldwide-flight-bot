@@ -783,6 +783,17 @@ def upcoming_months(n: int) -> list[str]:
     return months
 
 
+def fmt_date(d: str) -> str:
+    """Convert an API date 'YYYY-MM-DD' to display format 'DD/MM/YYYY'.
+    Leaves anything unparseable (e.g. 'flexible') untouched."""
+    if not d:
+        return d
+    try:
+        return date.fromisoformat(d).strftime("%d/%m/%Y")
+    except ValueError:
+        return d
+
+
 def trip_nights(dep: str, ret: str) -> int | None:
     """Number of nights between departure and return (YYYY-MM-DD strings)."""
     if not dep or not ret:
@@ -1001,6 +1012,102 @@ _HAND_LUGGAGE_CARRIERS = {
 }
 
 
+# Precise best-season notes for popular/watchlist-likely destinations.
+# "Best" = best weather / peak experience. NOTE: often the OPPOSITE of cheapest,
+# since peak season = peak prices. This is travel context, not a buy signal.
+_SEASON_PRECISE = {
+    # SE Asia / Indian Ocean
+    "DPS": "Apr–Oct (dry)",
+    "HKT": "Nov–Apr (dry)", "USM": "Feb–Apr", "BKK": "Nov–Feb (cool/dry)",
+    "DMK": "Nov–Feb (cool/dry)", "CNX": "Nov–Feb", "KBV": "Nov–Apr",
+    "SGN": "Dec–Apr (dry)", "HAN": "Oct–Apr", "DAD": "Feb–May",
+    "REP": "Nov–Mar (dry)", "PNH": "Nov–Mar (dry)",
+    "KUL": "Dec–Feb & Jun–Aug", "SIN": "Feb–Apr", "DPS_": "",
+    "MLE": "Nov–Apr (dry)", "CMB": "Dec–Mar (west coast)",
+    "DEL": "Oct–Mar (cool)", "BOM": "Nov–Feb", "GOI": "Nov–Mar",
+    "KTM": "Oct–Nov & Mar–Apr (clear, trekking)",
+    "CGK": "May–Sep (dry)", "MNL": "Dec–Apr (dry)", "CEB": "Dec–May",
+    # East Asia
+    "NRT": "Mar–Apr (blossom) & Oct–Nov (autumn)",
+    "HND": "Mar–Apr (blossom) & Oct–Nov (autumn)",
+    "KIX": "Mar–Apr & Oct–Nov", "NGO": "Mar–Apr & Oct–Nov",
+    "FUK": "Mar–May & Oct–Nov", "CTS": "Dec–Mar (snow) & Jun–Aug (cool)",
+    "OKA": "Apr–Jun & Oct (warm, less rain)",
+    "ICN": "Apr–Jun & Sep–Nov", "PUS": "Apr–Jun & Sep–Oct",
+    "TPE": "Oct–Apr (cooler/drier)", "HKG": "Oct–Dec (mild/dry)",
+    "PVG": "Mar–May & Sep–Nov", "PEK": "Sep–Oct (clear)",
+    # Middle East / N. Africa
+    "DXB": "Nov–Mar (mild)", "AUH": "Nov–Mar", "DOH": "Nov–Mar",
+    "MCT": "Oct–Mar", "RUH": "Nov–Mar", "JED": "Nov–Mar",
+    "TLV": "Apr–Jun & Sep–Nov", "AMM": "Mar–May & Sep–Nov",
+    "BEY": "Apr–Jun & Sep–Oct",
+    "CAI": "Oct–Apr (cooler)", "HRG": "Mar–May & Oct–Nov",
+    "SSH": "Mar–May & Oct–Nov", "RAK": "Mar–May & Sep–Nov",
+    "AGA": "Apr–Nov", "CMN": "Apr–Jun & Sep–Nov", "TUN": "Apr–Jun & Sep–Oct",
+    "DJE": "Apr–Jun & Sep–Oct",
+    # Turkey coast
+    "AYT": "Apr–Jun & Sep–Oct (beach, less heat)",
+    "ADB": "May–Jun & Sep–Oct", "BJV": "May–Jun & Sep–Oct",
+    "DLM": "May–Jun & Sep–Oct",
+    # Caucasus
+    "TBS": "May–Jun & Sep–Oct", "EVN": "May–Jun & Sep–Oct",
+    "GYD": "Apr–Jun & Sep–Oct", "KUT": "May–Oct", "BUS": "Jun–Sep (beach)",
+    # Americas
+    "JFK": "Apr–Jun & Sep–Nov", "EWR": "Apr–Jun & Sep–Nov",
+    "LAX": "Mar–May & Sep–Nov", "SFO": "Sep–Nov (warmest)",
+    "MIA": "Nov–Apr (dry/warm)", "MCO": "Nov–Apr", "LAS": "Mar–May & Oct–Nov",
+    "YYZ": "May–Jun & Sep–Oct", "YVR": "Jun–Sep",
+    "CUN": "Nov–Apr (dry)", "MEX": "Nov–Apr (dry)", "HAV": "Nov–Apr (dry)",
+    "PUJ": "Nov–Apr", "MBJ": "Nov–Apr", "SJO": "Dec–Apr (dry)",
+    "GRU": "Apr–Oct (drier)", "GIG": "Dec–Mar (summer) / May–Sep (mild)",
+    "EZE": "Oct–Nov & Mar–Apr", "SCL": "Oct–Apr", "LIM": "Dec–Apr",
+    "CUZ": "May–Sep (dry, trekking)", "BOG": "Dec–Mar & Jul–Aug (drier)",
+    # Africa (sub-Saharan / islands)
+    "NBO": "Jun–Oct & Jan–Feb (dry, safari)", "JRO": "Jun–Oct & Jan–Feb",
+    "ZNZ": "Jun–Oct (dry)", "DAR": "Jun–Oct", "JNB": "Apr–Oct (dry)",
+    "CPT": "Nov–Mar (summer/dry)", "MRU": "May–Dec (drier)",
+    "SEZ": "Apr–May & Oct–Nov", "ADD": "Oct–Mar (dry)", "SID": "Nov–Jun",
+    # Oceania
+    "SYD": "Sep–Nov & Mar–May", "MEL": "Mar–May (autumn)",
+    "BNE": "Mar–May & Sep–Nov", "PER": "Sep–Nov & Mar–May",
+    "AKL": "Dec–Mar (summer)", "CHC": "Dec–Mar", "NAN": "May–Oct (dry)",
+    "PPT": "May–Oct (dry)",
+}
+
+# Regional fallback by destination grouping — rough but sensible for the rest.
+def _season_region(dest: str) -> str:
+    s = SHORT_HAUL_DESTINATIONS.get(dest)
+    l = LONG_HAUL_DESTINATIONS.get(dest)
+    label = (s or l or ("",))[0].lower()
+    # Nordic / Arctic / Baltic
+    if any(k in label for k in ("arctic", "lapland", "svalbard", "iceland",
+                                "faroe", "tromso", "rovaniemi")):
+        return "Jun–Aug (mild) or Dec–Mar (aurora/snow)"
+    if dest in {"OSL","BGO","SVG","TRD","CPH","ARN","GOT","HEL","TLL","RIX",
+                "VNO","KUN","PLQ","AAR","AAL","BLL","TKU","TMP","OUL"}:
+        return "May–Aug (long days, mildest)"
+    # Mediterranean / Iberia / Greek isles / Italy south / Cyprus / Malta
+    if any(k in label for k in ("crete","rhodes","santorini","mykonos","corfu",
+            "kos","sicily","sardinia","cyprus","malta","ibiza","mallorca",
+            "menorca","canar","madeira","azores","algarve","corsica")):
+        return "May–Jun & Sep–Oct (warm, fewer crowds)"
+    # Long-haul tier default by broad region keywords
+    if l:
+        if any(k in label for k in ("caribbean","cancun","havana","punta",
+                "jamaica","aruba","bahamas","barbados")):
+            return "Nov–Apr (dry season)"
+        return "shoulder months (Apr–Jun, Sep–Oct) usually best"
+    # Generic Europe short-haul
+    return "May–Sep (warmest)"
+
+
+def season_note(dest: str) -> str:
+    """Best-season note: precise if known, else regional fallback. Always
+    flagged as weather/peak context, not a price signal."""
+    note = _SEASON_PRECISE.get(dest) or _season_region(dest)
+    return note
+
+
 def baggage_hint(airline: str) -> str:
     """Best-effort baggage note. The API doesn't return baggage data, so this
     is inferred from the airline alone and always flagged as unverified."""
@@ -1018,7 +1125,7 @@ def fmt_deal(d: dict) -> str:
     dep = d["departure_at"] or "flexible"
     ret = d["return_at"]
     air = d["airline"]
-    when = f"{dep} → {ret}" if ret else dep
+    when = f"{fmt_date(dep)} → {fmt_date(ret)}" if ret else fmt_date(dep)
     nights = d.get("nights")
     if nights:
         when += f" ({nights} night{'s' if nights != 1 else ''})"
@@ -1033,6 +1140,9 @@ def fmt_deal(d: dict) -> str:
     line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}{baggage_hint(air)}"
     if d["link"]:
         line += f' · <a href="{d["link"]}">book</a>'
+    _dest = d.get("dest")
+    if _dest:
+        line += f"\n   🗓 best season: {season_note(_dest)}"
     return line
 
 
@@ -1191,14 +1301,14 @@ def scan_watchlist(history: dict, today: str) -> str | None:
 
     if not rows:
         return None
-    lines = [f"<b>👀 Watching — {today}</b>", ""]
+    lines = [f"<b>👀 Watching — {fmt_date(today)}</b>", ""]
     for dest, label, best, lo, target, is_deal in rows:
         if best is None:
             lines.append(f"<b>{label}</b>: no fares found (target €{target})")
             continue
         arrow = "↔"
         price = best["price"]
-        when = f"{best['departure_at']} → {best['return_at']}"
+        when = f"{fmt_date(best['departure_at'])} → {fmt_date(best['return_at'])}"
         nights = best.get("nights")
         when += f" ({nights} nights)" if nights else ""
         flag = "  🎯 <b>DEAL</b>" if is_deal else ""
@@ -1210,12 +1320,14 @@ def scan_watchlist(history: dict, today: str) -> str | None:
         )
         if best["link"]:
             line += f' · <a href="{best["link"]}">book</a>'
+        line += f"\n   🗓 best season: {season_note(dest)}"
         lines.append(line)
     return "\n".join(lines).strip()
 
 
 def main() -> int:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_disp = fmt_date(today)  # DD/MM/YYYY for message headers
     history = load_history()
 
     short_deals, short_checked = scan_tier(SHORT_HAUL, SHORT_HAUL_DESTINATIONS, history, today)
@@ -1237,10 +1349,10 @@ def main() -> int:
     else:
         mode_label = " (round-trip)"
     short_digest = build_digest(
-        short_deals, f"<b>🇪🇺 Europe deal scan — {today}</b>{mode_label}"
+        short_deals, f"<b>🇪🇺 Europe deal scan — {today_disp}</b>{mode_label}"
     )
     long_digest = build_digest(
-        long_deals, f"<b>🌍 Worldwide deal scan — {today}</b>{mode_label}"
+        long_deals, f"<b>🌍 Worldwide deal scan — {today_disp}</b>{mode_label}"
     )
 
     sent = 0
@@ -1254,11 +1366,25 @@ def main() -> int:
         send_telegram(watch_digest)
         sent += 1
 
+    # Heartbeat: if NO deals fired (neither Europe nor Worldwide digest), send a
+    # short "still alive" note so silence never looks like a broken bot.
+    # Disable by setting GitHub variable HEARTBEAT=false.
+    heartbeat_on = os.environ.get("HEARTBEAT", "true").strip().lower() != "false"
+    no_deals = not short_digest and not long_digest
+    if heartbeat_on and no_deals:
+        total = short_checked + long_checked
+        send_telegram(
+            f"<b>✈️ Flight scan — {today_disp}</b>\n"
+            f"No deals today (scanned {total} routes). Targets are tight; "
+            f"this just means nothing cleared them. Bot is running fine."
+        )
+        sent += 1
+
     if sent == 0:
-        print(f"No deals today. Checked {short_checked + long_checked} routes.")
+        print(f"No messages sent. Checked {short_checked + long_checked} routes.")
     else:
         print(
-            f"Sent {sent} digest(s): {len(short_deals)} short + {len(long_deals)} long"
+            f"Sent {sent} message(s): {len(short_deals)} short + {len(long_deals)} long"
             f" across {short_checked + long_checked} routes."
         )
     return 0
