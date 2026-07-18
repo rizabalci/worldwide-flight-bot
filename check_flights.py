@@ -953,6 +953,9 @@ def _post_telegram(text: str) -> None:
         r.raise_for_status()
 
 
+DASHBOARD_URL = os.environ.get("DASHBOARD_URL") or "https://rizabalci.github.io/worldwide-flight-bot/dashboard.html"
+
+
 def send_telegram(text: str) -> None:
     """Send a message to Telegram, splitting into chunks if over the limit.
 
@@ -1335,6 +1338,46 @@ def scan_watchlist(history: dict, today: str) -> str | None:
     return "\n".join(lines).strip()
 
 
+def write_site_data(short_deals, long_deals, origins_list):
+    """Write deals.json for the dashboard: europe + worldwide arrays, same fields
+    the digest uses. Only firing deals are written (matches bot behaviour)."""
+    def clean(dl, tier):
+        out = []
+        for d in dl:
+            out.append({
+                "tier": tier,
+                "city": d.get("city"),
+                "origin": d.get("origin"),
+                "dest": d.get("dest"),
+                "price": d.get("price"),
+                "target": d.get("target"),
+                "avg": d.get("avg"),
+                "prev_lo": d.get("prev_lo"),
+                "airline": d.get("airline"),
+                "departure_at": d.get("departure_at"),
+                "return_at": d.get("return_at"),
+                "nights": d.get("nights"),
+                "link": d.get("link"),
+                "below_target": d.get("below_target", False),
+                "big_drop": d.get("big_drop", False),
+                "all_time_low": d.get("all_time_low", False),
+                "cabin": d.get("cabin", False),
+                "score": d.get("score", 0),
+            })
+        return out
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "origins": origins_list,
+        "counts": {"europe": len(short_deals), "worldwide": len(long_deals)},
+        "europe": clean(short_deals, "short"),
+        "worldwide": clean(long_deals, "long"),
+    }
+    with open("deals.json", "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=1, ensure_ascii=False)
+    print(f"Wrote deals.json: {len(short_deals)} europe + {len(long_deals)} worldwide")
+
+
 def main() -> int:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     today_disp = fmt_date(today)  # DD/MM/YYYY for message headers
@@ -1344,6 +1387,10 @@ def main() -> int:
     long_deals, long_checked = scan_tier(LONG_HAUL, LONG_HAUL_DESTINATIONS, history, today)
     watch_digest = scan_watchlist(history, today)
     save_history(history)
+    try:
+        write_site_data(short_deals, long_deals, list(ORIGINS))
+    except Exception as exc:
+        print(f'  ! could not write deals.json: {exc}')
 
     if WEEKEND_ONLY:
         _rev = {v: k for k, v in _DAY_NAMES.items()}
@@ -1359,10 +1406,14 @@ def main() -> int:
     else:
         mode_label = " (round-trip)"
     short_digest = build_digest(
-        short_deals, f"<b>🇪🇺 Europe deal scan — {today_disp}</b>{mode_label}"
+        short_deals,
+        f"<b>🇪🇺 Europe deal scan — {today_disp}</b>{mode_label}\n"
+        f"📊 <a href=\"{DASHBOARD_URL}\">Compare all in browser</a>"
     )
     long_digest = build_digest(
-        long_deals, f"<b>🌍 Worldwide deal scan — {today_disp}</b>{mode_label}"
+        long_deals,
+        f"<b>🌍 Worldwide deal scan — {today_disp}</b>{mode_label}\n"
+        f"📊 <a href=\"{DASHBOARD_URL}\">Compare all in browser</a>"
     )
 
     sent = 0
