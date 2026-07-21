@@ -686,8 +686,12 @@ def passes_filter(dep: str, nights: int | None, cfg: dict) -> bool:
         return False
 
 
-_pacing_seconds = 0.5  # global, increases when 429s appear
-_pacing_lock_min = 0.5
+# Travelpayouts Data API allows 60 requests/minute. Exceeding it returns 429
+# and blocks further calls until the minute window clears. So we pace at ~1
+# call/second (60/min) with headroom, and on a 429 we WAIT and RETRY the same
+# call rather than dropping its data (the old behaviour that capped coverage).
+_pacing_seconds = env_float("PACING_SECONDS", 1.1)  # ~55 req/min, safe margin
+_pacing_lock_min = 1.0
 
 
 def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
@@ -701,11 +705,6 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
     """
     global _pacing_seconds
     best = None
-    # Pull a small pool of fares per month (not just the single cheapest) so the
-    # trip-length cap and weekend filter have alternatives to choose from.
-    # 30 was overkill and tripped API rate limits (coverage would collapse);
-    # ~8 gives the filters enough to work with while being far lighter.
-    # Tunable via FETCH_LIMIT if needed.
     fetch_limit = env_int("FETCH_LIMIT", 8)
     for ym in upcoming_months(cfg["months_ahead"]):
         params = {
@@ -720,33 +719,39 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
             "token": TRAVELPAYOUTS_TOKEN,
         }
         data = None
-        try:
-            r = requests.get(
-                API_BASE,
-                params=params,
-                headers={"X-Access-Token": TRAVELPAYOUTS_TOKEN},
-                timeout=30,
-            )
-            if r.status_code == 429:
-                # Rate limited: slow the whole run by 0.5s and move on.
-                # One missed data point is fine; retrying makes it worse.
-                _pacing_seconds = min(_pacing_seconds + 0.5, 5.0)
-                print(
-                    f"  ~ {origin}->{destination} {ym}: 429, pacing -> {_pacing_seconds:.1f}s",
-                    file=sys.stderr,
+        # Retry loop: on 429 we wait and try the SAME call again (up to a cap),
+        # so a rate-limit hit no longer means losing this route's data.
+        attempts = 0
+        while True:
+            attempts += 1
+            try:
+                r = requests.get(
+                    API_BASE,
+                    params=params,
+                    headers={"X-Access-Token": TRAVELPAYOUTS_TOKEN},
+                    timeout=30,
                 )
-                time.sleep(_pacing_seconds)
-                continue
-            if r.status_code == 400:
-                # Route/month not indexed -- expected for sparse routes.
-                time.sleep(_pacing_seconds)
-                continue
-            r.raise_for_status()
-            data = r.json().get("data", [])
-        except Exception as e:  # noqa: BLE001
-            print(f"  ! {origin}->{destination} {ym}: API error {e}", file=sys.stderr)
-            time.sleep(_pacing_seconds)
-            continue
+                if r.status_code == 429:
+                    # Blocked until the 60/min window clears. Back off and retry
+                    # the same call. Honor Retry-After if the API sends it.
+                    wait = int(r.headers.get("Retry-After", "0")) or min(15, 3 * attempts)
+                    print(
+                        f"  ~ {origin}->{destination} {ym}: 429, waiting {wait}s "
+                        f"(attempt {attempts})",
+                        file=sys.stderr,
+                    )
+                    time.sleep(wait)
+                    if attempts < 5:
+                        continue  # retry same call
+                    break         # give up on this month after 5 tries
+                if r.status_code == 400:
+                    break  # route/month not indexed -- expected, skip
+                r.raise_for_status()
+                data = r.json().get("data", [])
+                break
+            except Exception as e:  # noqa: BLE001
+                print(f"  ! {origin}->{destination} {ym}: API error {e}", file=sys.stderr)
+                break
 
         if data:
             for item in data:
