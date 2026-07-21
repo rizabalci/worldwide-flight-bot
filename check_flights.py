@@ -845,11 +845,12 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
     """
     global _pacing_seconds
     best = None
-    # Pull a pool of fares per month (not just the single cheapest) so the
+    # Pull a small pool of fares per month (not just the single cheapest) so the
     # trip-length cap and weekend filter have alternatives to choose from.
-    # Without this, the one cheapest fare might be a 23-night trip that gets
-    # rejected, leaving nothing for a route that does have a good shorter option.
-    fetch_limit = 30
+    # 30 was overkill and tripped API rate limits (coverage would collapse);
+    # ~8 gives the filters enough to work with while being far lighter.
+    # Tunable via FETCH_LIMIT if needed.
+    fetch_limit = env_int("FETCH_LIMIT", 8)
     for ym in upcoming_months(cfg["months_ahead"]):
         params = {
             "origin": origin,
@@ -962,7 +963,14 @@ def send_telegram(text: str) -> None:
     Telegram caps messages at 4096 characters. On day one (or any busy day)
     a digest can exceed that, so we split on line boundaries -- never mid-deal --
     and send sequentially with a continuation marker.
+
+    If the MUTE variable is set to "true", the bot still scans and records
+    price history but sends nothing to Telegram. Useful when you're not
+    travelling but want history to keep accumulating for later tuning.
     """
+    if os.environ.get("MUTE", "").strip().lower() == "true":
+        print(f"[muted] Would have sent {len(text)} chars to Telegram.")
+        return
     LIMIT = 3500  # safety margin under Telegram's 4096 hard cap
     if len(text) <= LIMIT:
         _post_telegram(text)
@@ -1401,7 +1409,10 @@ def main() -> int:
         print("! Fewer than a quarter of routes returned data — API likely throttled "
               "or down. Leaving existing deals.json untouched, not sending a digest.",
               file=sys.stderr)
-        return 1
+        # Exit cleanly rather than red-failing: a throttled day is expected
+        # occasionally and shouldn't spam failure notifications. History is
+        # deliberately not saved so a sparse scan can't pollute the record.
+        return 0
 
     watch_digest = scan_watchlist(history, today)
     save_history(history)
