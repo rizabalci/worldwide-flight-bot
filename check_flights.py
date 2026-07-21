@@ -1385,6 +1385,24 @@ def main() -> int:
 
     short_deals, short_checked = scan_tier(SHORT_HAUL, SHORT_HAUL_DESTINATIONS, history, today)
     long_deals, long_checked = scan_tier(LONG_HAUL, LONG_HAUL_DESTINATIONS, history, today)
+
+    # Coverage guard: if the API returned data for almost no routes, it was
+    # almost certainly throttling or down. Writing deals.json and sending a
+    # digest anyway would look like "no deals today" — misleading. Bail loudly
+    # instead, leaving yesterday's data intact.
+    short_total = len(ORIGINS) * len(SHORT_HAUL_DESTINATIONS)
+    long_total = len(ORIGINS) * len(LONG_HAUL_DESTINATIONS)
+    total_checked = short_checked + long_checked
+    total_routes = short_total + long_total
+    coverage = total_checked / max(total_routes, 1)
+    print(f"Coverage: {total_checked}/{total_routes} routes returned data ({coverage:.0%}) "
+          f"[EU {short_checked}/{short_total}, WW {long_checked}/{long_total}]")
+    if coverage < 0.25:
+        print("! Fewer than a quarter of routes returned data — API likely throttled "
+              "or down. Leaving existing deals.json untouched, not sending a digest.",
+              file=sys.stderr)
+        return 1
+
     watch_digest = scan_watchlist(history, today)
     save_history(history)
     try:
