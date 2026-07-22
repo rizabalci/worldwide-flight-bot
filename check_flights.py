@@ -694,6 +694,11 @@ def passes_filter(dep: str, nights: int | None, cfg: dict) -> bool:
 _pacing_seconds = env_float("PACING_SECONDS", 0.6)
 _pacing_lock_min = 0.5
 
+# When a route returns nothing for the queried months, retry once with no month
+# constraint. Catches routes whose cached fares sit outside the scan window.
+# Set BROAD_FALLBACK=false to disable (saves ~1 call per empty route).
+BROAD_FALLBACK = os.environ.get("BROAD_FALLBACK", "true").strip().lower() != "false"
+
 
 def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
     """Cheapest fare origin->destination under the tier's rules.
@@ -772,6 +777,51 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
                         "link": AVIASALES + item.get("link", "") if item.get("link") else None,
                     }
         time.sleep(_pacing_seconds)
+
+    # Fallback: the month-by-month loop only sees fares cached for those exact
+    # months. Many routes have cached fares in OTHER months and so look empty.
+    # One broad query (no departure_at) catches those. Only runs for routes that
+    # found nothing, so it costs ~1 extra call per otherwise-empty route.
+    if best is None and BROAD_FALLBACK:
+        params = {
+            "origin": origin,
+            "destination": destination,
+            "currency": "eur",
+            "one_way": cfg["one_way"],
+            "direct": cfg["direct"],
+            "sorting": "price",
+            "limit": env_int("FETCH_LIMIT", 8),
+            "token": TRAVELPAYOUTS_TOKEN,
+        }
+        try:
+            r = requests.get(
+                API_BASE,
+                params=params,
+                headers={"X-Access-Token": TRAVELPAYOUTS_TOKEN},
+                timeout=30,
+            )
+            if r.status_code == 200:
+                for item in r.json().get("data", []):
+                    price = item.get("price")
+                    dep = (item.get("departure_at") or "")[:10]
+                    ret = (item.get("return_at") or "")[:10]
+                    nights = trip_nights(dep, ret)
+                    if price is None or not passes_filter(dep, nights, cfg):
+                        continue
+                    if best is None or price < best["price"]:
+                        best = {
+                            "price": int(round(price)),
+                            "airline": item.get("airline", "?"),
+                            "departure_at": dep,
+                            "return_at": ret,
+                            "nights": nights,
+                            "link": AVIASALES + item.get("link", "") if item.get("link") else None,
+                            "broad": True,  # found outside the normal month window
+                        }
+        except Exception as e:  # noqa: BLE001
+            print(f"  ! {origin}->{destination} broad: {e}", file=sys.stderr)
+        time.sleep(_pacing_seconds)
+
     return best
 
 
@@ -1013,6 +1063,8 @@ def fmt_deal(d: dict) -> str:
     line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}{baggage_hint(air)}"
     if d["link"]:
         line += f' · <a href="{d["link"]}">book</a>'
+    if d.get("broad"):
+        line += "  <i>·outside scan window</i>"
     _dest = d.get("dest")
     if _dest:
         line += f"\n   🗓 best season: {season_note(_dest)}"
@@ -1081,6 +1133,7 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
                     "departure_at": cheapest["departure_at"],
                     "return_at": cheapest["return_at"],
                     "nights": cheapest.get("nights"),
+                    "broad": cheapest.get("broad", False),
                     "link": cheapest["link"],
                     "below_target": below_target,
                     "big_drop": big_drop,
