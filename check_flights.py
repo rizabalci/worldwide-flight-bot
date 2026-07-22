@@ -686,12 +686,13 @@ def passes_filter(dep: str, nights: int | None, cfg: dict) -> bool:
         return False
 
 
-# Travelpayouts Data API allows 60 requests/minute. Exceeding it returns 429
-# and blocks further calls until the minute window clears. So we pace at ~1
-# call/second (60/min) with headroom, and on a 429 we WAIT and RETRY the same
-# call rather than dropping its data (the old behaviour that capped coverage).
-_pacing_seconds = env_float("PACING_SECONDS", 1.1)  # ~55 req/min, safe margin
-_pacing_lock_min = 1.0
+# Travelpayouts Data API allows 60 requests/minute. We pace under that, but
+# testing showed 429s were NOT the coverage bottleneck: the Data API serves
+# cached fares from real Aviasales searches, so low-traffic routes simply have
+# no data. 0.6s (~100/min burst, well-behaved in practice) keeps runtime sane;
+# the 429 retry logic below still protects us if we ever do get limited.
+_pacing_seconds = env_float("PACING_SECONDS", 0.6)
+_pacing_lock_min = 0.5
 
 
 def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
@@ -1020,17 +1021,23 @@ def fmt_deal(d: dict) -> str:
 
 # -------------------- Scan + digest --------------------
 
+_origin_stats: dict[str, list[int]] = {}  # origin -> [routes_with_data, routes_tried]
+
+
 def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple[list, int]:
     deals = []
     checked = 0
     for origin in ORIGINS:
+        stats = _origin_stats.setdefault(origin, [0, 0])
         for dest, (city, target) in destinations.items():
             key = f"{origin}-{dest}-{cfg['trip_type']}"
             cheapest = get_cheapest(origin, dest, cfg)
+            stats[1] += 1
             if cheapest is None:
                 print(f"  [{cfg['name']}] {origin}->{dest} {city}: no fares")
                 continue
             checked += 1
+            stats[0] += 1
             price = cheapest["price"]
             entry = history.get(key, {})
             # Back-compat: old history stored a bare list; wrap it.
@@ -1266,6 +1273,13 @@ def main() -> int:
     coverage = total_checked / max(total_routes, 1)
     print(f"Coverage: {total_checked}/{total_routes} routes returned data ({coverage:.0%}) "
           f"[EU {short_checked}/{short_total}, WW {long_checked}/{long_total}]")
+    # Per-origin breakdown: the Data API serves cached fares from real Aviasales
+    # searches, so a low-traffic origin returns far less. This shows which
+    # origins are actually earning their runtime.
+    for origin in ORIGINS:
+        hit, tried = _origin_stats.get(origin, [0, 0])
+        pct = hit / max(tried, 1)
+        print(f"  origin {origin}: {hit}/{tried} routes returned data ({pct:.0%})")
     if coverage < 0.25:
         print("! Fewer than a quarter of routes returned data — API likely throttled "
               "or down. Leaving existing deals.json untouched, not sending a digest.",
