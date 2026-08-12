@@ -72,7 +72,8 @@ ORIGINS = [o.strip().upper() for o in os.environ.get("ORIGINS", "").split(",") i
 # Comma-separated IATA codes. The bot shows each one's current cheapest fare
 # in a "👀 Watching" section, and flags it if it also clears its deal target.
 # Set/extend via the GitHub variable WATCHLIST, e.g. "DPS,NRT,JFK".
-WATCHLIST = [c.strip().upper() for c in os.environ.get("FOCUS", "").split(",") if c.strip()}
+WATCHLIST = [c.strip().upper() for c in os.environ.get("WATCHLIST", "").split(",") if c.strip()] or ["DPS"]
+FOCUS = {c.strip().upper() for c in os.environ.get("FOCUS", "").split(",") if c.strip()}
 # FOCUS: when set, scan ONLY these destination codes. Empty = scan everything.
 # How the watchlist measures "cheapest": respects the same trip-length caps as
 # normal scanning so it won't show a watchlist price for a 23-night trip.
