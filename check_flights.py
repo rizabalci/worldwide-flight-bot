@@ -1083,7 +1083,8 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
     checked = 0
     for origin in ORIGINS:
         stats = _origin_stats.setdefault(origin, [0, 0])
-        for dest, (city, target) in destinations.items(): if FOCUS and dest not in FOCUS:
+       for dest, (city, target) in destinations.items():
+            if FOCUS and dest not in FOCUS:
                 continue
             key = f"{origin}-{dest}-{cfg['trip_type']}"
             cheapest = get_cheapest(origin, dest, cfg)
