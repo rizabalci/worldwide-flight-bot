@@ -43,6 +43,7 @@ jobs:
           DEP_DAYS: ${{ vars.DEP_DAYS }}
           HEARTBEAT: ${{ vars.HEARTBEAT }}
           MUTE: ${{ vars.MUTE }}
+          FOCUS: ${{ vars.FOCUS }}
         run: python check_flights.py
 
       - name: Commit updated price history
