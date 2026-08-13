@@ -92,7 +92,7 @@
   .vs .up { color:#c0512f; font-weight:700; }
   .pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--cloud); color:var(--jet); }
   .pill.long { background:#eef3ff; color:var(--dusk); }
-  .links a { display:inline-block; font-size:12px; font-weight:700; text-decoration:none; color:#fff; background:var(--jet); padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .links a.wa { background:#eafaf1; color:#1a9e63; } .links a { display:inline-block; font-size:12px; font-weight:700; text-decoration:none; color:#fff; background:var(--jet); padding:6px 12px; border-radius:8px; white-space:nowrap; }
   .links a:hover { background:var(--dusk); }
 
   .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
@@ -215,6 +215,22 @@ const state = { all:[], filtered:[], tier:"all", sortKey:"price", sortDir:1, vie
 
 function fmtDate(iso){ if(!iso) return "–"; const d=new Date(iso+"T00:00:00"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short"}); }
 function airline(c){ return AIRLINES[c] || c; }
+function waUrl(d){
+  const dates = d.return_at ? `${fmtDate(d.departure_at)} \u2192 ${fmtDate(d.return_at)}` : fmtDate(d.departure_at);
+  const tier = d.tier === "long" ? "Worldwide" : "Europe";
+  const vs = (d.avg && d.avg > d.price) ? ` (\u2193${Math.round((1-d.price/d.avg)*100)}% vs avg)` : "";
+  const flags = [];
+  if (d.all_time_low) flags.push("\uD83C\uDFC6 all-time low");
+  if (d.below_target) flags.push("\uD83D\uDD25 below target");
+  const lines = [
+    `\u2708\uFE0F ${d.city} \u2014 \u20ac${d.price}${vs}`,
+    `${d.origin} \u2192 ${d.dest} \u00b7 ${airline(d.airline)} \u00b7 ${tier}`,
+    `\uD83D\uDCC5 ${dates}` + (d.nights ? ` \u00b7 ${d.nights} nights` : ""),
+  ];
+  if (flags.length) lines.push(flags.join(" \u00b7 "));
+  if (d.link) lines.push(d.link);
+  return "https://wa.me/?text=" + encodeURIComponent(lines.join("\n"));
+}
 
 async function load(){
   let raw;
@@ -346,7 +362,7 @@ function renderTable(rows){
       <td>${fmtDate(d.departure_at)}<div class="sub">→ ${fmtDate(d.return_at)}</div></td>
       <td>${airline(d.airline)}${d.cabin?'<div class="sub">cabin bag?</div>':''}</td>
       <td><span class="pill ${d.tier==="long"?"long":""}">${d.tier==="long"?"World":"Europe"}</span></td>
-      <td class="links"><a href="${d.link}" target="_blank" rel="noopener">Book</a></td>
+      <td class="links"><a href="${d.link}" target="_blank" rel="noopener">Book</a> <a class="wa" href="${waUrl(d)}" target="_blank" rel="noopener">\uD83D\uDCF2</a></td>
     </tr>`).join("");
 }
 
@@ -367,6 +383,7 @@ function renderCards(rows){
         <div>Lowest seen <b>€${d.prev_lo||d.price}</b></div>
       </div>
       <a class="cta" href="${d.link}" target="_blank" rel="noopener">Book flight →</a>
+      <a class="cta wa" href="${waUrl(d)}" target="_blank" rel="noopener" style="margin-top:6px;background:#1a9e63;">\uD83D\uDCF2 Share on WhatsApp</a>
     </div>`; }).join("");
 }
 
