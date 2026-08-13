@@ -1323,8 +1323,8 @@ def main() -> int:
     # almost certainly throttling or down. Writing deals.json and sending a
     # digest anyway would look like "no deals today" — misleading. Bail loudly
     # instead, leaving yesterday's data intact.
-    short_total = len(ORIGINS) * len(SHORT_HAUL_DESTINATIONS)
-    long_total = len(ORIGINS) * len(LONG_HAUL_DESTINATIONS)
+    short_total = len(ORIGINS) * len([d for d in SHORT_HAUL_DESTINATIONS if not FOCUS or d in FOCUS])
+    long_total = len(ORIGINS) * len([d for d in LONG_HAUL_DESTINATIONS if not FOCUS or d in FOCUS])
     total_checked = short_checked + long_checked
     total_routes = short_total + long_total
     coverage = total_checked / max(total_routes, 1)
