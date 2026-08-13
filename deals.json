@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-13T10:36:36.303438+00:00",
+ "generated_at": "2026-08-13T10:56:29.454334+00:00",
  "date": "2026-08-13",
  "origins": [
   "VIE",
@@ -7,30 +7,10 @@
  ],
  "counts": {
   "europe": 0,
-  "worldwide": 2
+  "worldwide": 1
  },
  "europe": [],
  "worldwide": [
-  {
-   "tier": "long",
-   "city": "Osaka Kansai",
-   "origin": "BTS",
-   "dest": "KIX",
-   "price": 860,
-   "target": 460,
-   "avg": 1081,
-   "prev_lo": 860,
-   "airline": "FR",
-   "departure_at": "2026-09-16",
-   "return_at": "2026-09-22",
-   "nights": 6,
-   "link": "https://www.aviasales.com/search/BTS1609KIX22091?t=HU17895999001789735500001840BTSDUBPEKKIX17901063001790205600002075KIXBKKAUHMXPBTS_efcf2461c6d9b2034612184cb2f42c52_81771&search_date=09082026&expected_price_uuid=019fe523-92e1-8030-6897-c6a87a74d391&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=Lh5DoFFvCQc7K5sJjrt9LA&origin_airports=1&destination_airports=0&expected_price_source=share&expected_price_currency=eur&expected_price=860",
-   "below_target": false,
-   "big_drop": true,
-   "all_time_low": false,
-   "cabin": false,
-   "score": -0.8695652173913043
-  },
   {
    "tier": "long",
    "city": "Colombo (eVisa)",
@@ -38,7 +18,7 @@
    "dest": "CMB",
    "price": 729,
    "target": 420,
-   "avg": 965.2857142857143,
+   "avg": 947.1428571428571,
    "prev_lo": 729,
    "airline": "W6",
    "departure_at": "2027-01-04",
