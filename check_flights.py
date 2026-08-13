@@ -27,6 +27,7 @@ Environment variables:
 
 import json
 import os
+import re
 import sys
 import time
 from datetime import date, datetime, timezone
@@ -489,6 +490,8 @@ LONG_HAUL_DESTINATIONS = {
     "HAN": ("Hanoi", 460),
     "DAD": ("Da Nang", 540),
     "CXR": ("Nha Trang", 540),
+    "REP": ("Siem Reap (eVisa)", 600),
+    "PNH": ("Phnom Penh (eVisa)", 600),
     # --- South Asia ---
     "DEL": ("Delhi (eVisa)", 340),
     "BOM": ("Mumbai (eVisa)", 380),
@@ -1041,6 +1044,91 @@ def baggage_hint(airline: str) -> str:
     return ""
 
 
+COUNTRY_MAP = {
+ **{c:"UK" for c in "LHR LGW STN LTN LCY MAN EDI GLA BHX BRS EMA LBA LPL NCL SOU BFS BHD".split()},
+ **{c:"Ireland" for c in "DUB ORK SNN".split()},
+ **{c:"Italy" for c in "FCO CIA MXP BGY LIN TRN RMI BLQ FLR PSA VCE TSF VRN TRS GOA AOI PSR NAP BRI SUF CTA PMO TPS OLB CAG AHO".split()},
+ **{c:"Spain" for c in "BCN GRO REU ZAZ VLL RGS MAD VLC ALC MJV AGP GRX LEI SVQ BJZ BIO EAS SDR OVD LEN SCQ VGO PMI IBZ MAH TFS TFN LPA ACE FUE".split()},
+ **{c:"Portugal" for c in "LIS OPO FAO FNC PDL".split()},
+ **{c:"France" for c in "CDG ORY BVA NCE MRS TLN LYS TLS BOD BIQ FNI MPL NTE RNS LIL SXB AJA BIA".split()},
+ **{c:"Netherlands" for c in "AMS EIN RTM GRQ MST".split()},
+ **{c:"Belgium" for c in "BRU CRL ANR OST LGG".split()}, "LUX":"Luxembourg",
+ **{c:"Germany" for c in "BER HAM MUC NUE FMM FRA HHN NRN DUS CGN DTM PAD STR FKB FDH LEJ DRS ERF BRE HAJ RLG".split()},
+ **{c:"Switzerland" for c in "ZRH GVA BSL BRN LUG".split()},
+ **{c:"Czechia" for c in "PRG BRQ OSR PED".split()}, "KSC":"Slovakia",
+ **{c:"Poland" for c in "WAW KRK GDN POZ WRO KTW LCJ LUZ BZG RZE SZZ".split()},
+ **{c:"Romania" for c in "OTP CLJ IAS TSR SBZ CND".split()},
+ **{c:"Bulgaria" for c in "SOF VAR BOJ PDV".split()}, "KIV":"Moldova",
+ **{c:"Croatia" for c in "ZAG SPU DBV ZAD PUY RJK OSI".split()},
+ **{c:"Serbia" for c in "BEG INI".split()},
+ **{c:"Bosnia" for c in "SJJ TZL BNX".split()},
+ **{c:"Montenegro" for c in "TGD TIV".split()}, "TIA":"Albania",
+ **{c:"N. Macedonia" for c in "SKP OHD".split()}, "PRN":"Kosovo",
+ **{c:"Greece" for c in "ATH SKG KVA JTY JIK JKH LXS MJT SMI JSI SKU VOL JNX PAS MLO JSH HER CHQ RHO AOK JTR JMK CFU PVK KGS ZTH JKL EFL".split()},
+ **{c:"Cyprus" for c in "LCA PFO".split()}, "MLA":"Malta",
+ "CPH":"Denmark", **{c:"Sweden" for c in "ARN BMA NYO GOT MMX".split()},
+ **{c:"Norway" for c in "OSL TRF BGO TOS".split()},
+ **{c:"Finland" for c in "HEL RVN".split()}, "KEF":"Iceland",
+ "TLL":"Estonia", "RIX":"Latvia", **{c:"Lithuania" for c in "VNO KUN".split()},
+ **{c:"Turkey" for c in "AYT ADB BJV DLM".split()},
+ **{c:"UAE" for c in "DXB AUH SHJ".split()}, "DOH":"Qatar", "BAH":"Bahrain",
+ "KWI":"Kuwait", "MCT":"Oman",
+ **{c:"Saudi Arabia" for c in "RUH JED DMM MED".split()},
+ **{c:"Israel" for c in "TLV ETM".split()}, "BEY":"Lebanon", "AMM":"Jordan",
+ **{c:"Iraq" for c in "BGW EBL".split()}, **{c:"Iran" for c in "IKA MHD".split()},
+ **{c:"Egypt" for c in "CAI HRG SSH LXR".split()},
+ **{c:"Morocco" for c in "RAK CMN AGA FEZ TNG OUD NDR".split()},
+ **{c:"Tunisia" for c in "TUN DJE".split()}, **{c:"Algeria" for c in "ALG ORN".split()},
+ **{c:"Kenya" for c in "NBO MBA".split()}, **{c:"Tanzania" for c in "JRO DAR ZNZ".split()},
+ "EBB":"Uganda", "KGL":"Rwanda", "ADD":"Ethiopia",
+ **{c:"South Africa" for c in "JNB CPT".split()}, "WDH":"Namibia", "HRE":"Zimbabwe",
+ "TNR":"Madagascar", "MRU":"Mauritius", "SEZ":"Seychelles",
+ **{c:"Nigeria" for c in "LOS ABV".split()}, "ACC":"Ghana", "DKR":"Senegal",
+ "ABJ":"Ivory Coast", "LAD":"Angola", "DLA":"Cameroon", "NKC":"Mauritania",
+ **{c:"Cape Verde" for c in "SID RAI".split()},
+ **{c:"Georgia" for c in "TBS KUT BUS".split()}, "EVN":"Armenia", "GYD":"Azerbaijan",
+ **{c:"Uzbekistan" for c in "TAS SKD".split()}, **{c:"Kazakhstan" for c in "ALA NQZ".split()},
+ "DYU":"Tajikistan", "ASB":"Turkmenistan",
+ **{c:"Japan" for c in "NRT HND KIX NGO FUK CTS OKA".split()},
+ **{c:"South Korea" for c in "ICN PUS".split()}, "TPE":"Taiwan",
+ "HKG":"Hong Kong", "MFM":"Macau",
+ **{c:"China" for c in "PVG PEK CAN CTU XIY KMG SYX".split()},
+ **{c:"Thailand" for c in "BKK DMK HKT USM CNX KBV".split()},
+ "KUL":"Malaysia", "SIN":"Singapore",
+ **{c:"Indonesia" for c in "DPS CGK LOP".split()},
+ **{c:"Philippines" for c in "MNL CEB".split()},
+ **{c:"Vietnam" for c in "SGN HAN DAD CXR".split()},
+ **{c:"Cambodia" for c in "REP PNH".split()},
+ **{c:"India" for c in "DEL BOM BLR MAA HYD CCU GOI JAI COK".split()},
+ "KTM":"Nepal", "CMB":"Sri Lanka", "MLE":"Maldives", "DAC":"Bangladesh",
+ **{c:"Pakistan" for c in "ISB LHE KHI".split()},
+ **{c:"USA" for c in "JFK EWR BOS IAD PHL MIA FLL MCO TPA ATL ORD MSP DFW IAH AUS DEN PHX LAS LAX SFO SEA PDX HNL OGG ANC".split()},
+ **{c:"Canada" for c in "YYZ YUL YOW YQB YHZ YYC YEG YVR".split()},
+ **{c:"Mexico" for c in "MEX GDL MTY CUN CZM PVR SJD MID".split()},
+ "HAV":"Cuba", **{c:"Dominican Rep." for c in "PUJ SDQ".split()},
+ **{c:"Jamaica" for c in "MBJ KIN".split()}, "AUA":"Aruba", "CUR":"Curacao",
+ "BGI":"Barbados", "POS":"Trinidad", "PTY":"Panama",
+ **{c:"Costa Rica" for c in "SJO LIR".split()}, "GUA":"Guatemala",
+ "SAL":"El Salvador", "BZE":"Belize",
+ **{c:"Brazil" for c in "GRU GIG BSB FOR".split()},
+ **{c:"Argentina" for c in "EZE COR".split()}, "SCL":"Chile", "LIM":"Peru",
+ **{c:"Colombia" for c in "BOG CTG MDE CLO".split()},
+ **{c:"Ecuador" for c in "UIO GYE".split()}, "MVD":"Uruguay",
+ **{c:"Australia" for c in "SYD MEL BNE PER ADL OOL CNS".split()},
+ **{c:"New Zealand" for c in "AKL CHC ZQN WLG".split()},
+}
+
+
+def city_label(dest: str, city: str) -> str:
+    country = COUNTRY_MAP.get(dest)
+    if not country:
+        return city
+    m = re.match(r"^(.*?)\s*\((.+)\)\s*$", city)
+    if m:
+        return f"{m.group(1)} ({country}, {m.group(2)})"
+    return f"{city} ({country})"
+
+
 def fmt_deal(d: dict) -> str:
     arrow = d["cfg"]["arrow"]
     city = d["city"]
@@ -1086,6 +1174,7 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
         for dest, (city, target) in destinations.items():
             if FOCUS and dest not in FOCUS:
                 continue
+            city = city_label(dest, city)
             key = f"{origin}-{dest}-{cfg['trip_type']}"
             cheapest = get_cheapest(origin, dest, cfg)
             stats[1] += 1
@@ -1219,6 +1308,7 @@ def scan_watchlist(history: dict, today: str) -> str | None:
             print(f"  [watch] {dest}: not in any tier, skipping")
             continue
         label, target = dests[dest]
+        label = city_label(dest, label)
         # Cheapest across origins for this route.
         best = None
         for origin in ORIGINS:
