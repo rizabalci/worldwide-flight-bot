@@ -1122,8 +1122,10 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
                 f" | {'HIT' if (below_target or big_drop or all_time_low) else '-'}"
             )
 
-            if below_target or big_drop or all_time_low:
+            is_deal = below_target or big_drop or all_time_low
+            if True:
                 deals.append({
+                    "is_deal": is_deal,
                     "tier": cfg["name"],
                     "cfg": cfg,
                     "origin": origin,
@@ -1157,6 +1159,7 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
 
 def build_digest(deals: list, header: str) -> str | None:
     """Build a Telegram digest for one tier. Returns None if no deals."""
+    deals = [d for d in deals if d.get("is_deal")]
     if not deals:
         return None
     # Priority order: all-time lows first, then big drops, then below-target.
@@ -1284,13 +1287,14 @@ def write_site_data(short_deals, long_deals, origins_list):
                 "dest": d.get("dest"),
                 "price": d.get("price"),
                 "target": d.get("target"),
-                "avg": d.get("avg"),
-                "prev_lo": d.get("prev_lo"),
+                "avg": round(d["avg"]) if d.get("avg") is not None else None,
+                "prev_lo": round(d["prev_lo"]) if d.get("prev_lo") is not None else None,
                 "airline": d.get("airline"),
                 "departure_at": d.get("departure_at"),
                 "return_at": d.get("return_at"),
                 "nights": d.get("nights"),
                 "link": d.get("link"),
+                "is_deal": d.get("is_deal", False),
                 "below_target": d.get("below_target", False),
                 "big_drop": d.get("big_drop", False),
                 "all_time_low": d.get("all_time_low", False),
