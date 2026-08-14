@@ -1373,6 +1373,7 @@ def write_site_data(short_deals, long_deals, origins_list):
             out.append({
                 "tier": tier,
                 "city": d.get("city"),
+                "country": COUNTRY_MAP.get(d.get("dest")),
                 "origin": d.get("origin"),
                 "dest": d.get("dest"),
                 "price": d.get("price"),

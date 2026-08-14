@@ -141,6 +141,10 @@
       <select id="f-city"><option value="">All destinations</option></select>
     </div>
     <div class="field">
+      <label>Country</label>
+      <select id="f-country"><option value="">All countries</option></select>
+    </div>
+    <div class="field">
       <label>Airline</label>
       <select id="f-airline"><option value="">Any airline</option></select>
     </div>
@@ -250,13 +254,14 @@ function buildOptions(){
   const add=(sel,vals,fmt)=>{ const el=document.getElementById(sel); [...new Set(vals)].filter(Boolean).sort().forEach(v=>el.add(new Option(fmt?fmt(v):v,v))); };
   add("f-origin", state.all.map(d=>d.origin));
   add("f-city", state.all.map(d=>d.city));
+  add("f-country", state.all.map(d=>d.country).filter(Boolean));
   add("f-airline", state.all.map(d=>d.airline), airline);
   const maxP = Math.max(200, ...state.all.map(d=>d.price));
   const p=document.getElementById("f-price"); p.max=Math.ceil(maxP/10)*10; p.value=p.max;
 }
 
 function initControls(){
-  ["f-origin","f-city","f-airline","f-from","f-to","f-price","f-nights","f-deal","f-atl","f-cabin"]
+  ["f-origin","f-city","f-country","f-airline","f-from","f-to","f-price","f-nights","f-deal","f-atl","f-cabin"]
     .forEach(id=>{ const el=document.getElementById(id); el.addEventListener("input",apply); el.addEventListener("change",apply); });
   document.getElementById("reset").addEventListener("click",reset);
   document.getElementById("tab-table").addEventListener("click",()=>setView("table"));
@@ -275,7 +280,7 @@ function initControls(){
 }
 
 function reset(){
-  ["f-origin","f-city","f-airline","f-from","f-to"].forEach(id=>document.getElementById(id).value="");
+  ["f-origin","f-city","f-country","f-airline","f-from","f-to"].forEach(id=>document.getElementById(id).value="");
   ["f-deal","f-atl","f-cabin"].forEach(id=>document.getElementById(id).checked=false);
   const p=document.getElementById("f-price"); p.value=p.max;
   document.getElementById("f-nights").value=15;
@@ -289,13 +294,14 @@ function syncLabels(){
 function apply(){
   syncLabels();
   const g=id=>document.getElementById(id).value, c=id=>document.getElementById(id).checked;
-  const origin=g("f-origin"), city=g("f-city"), air=g("f-airline"), from=g("f-from"), to=g("f-to");
+  const origin=g("f-origin"), city=g("f-city"), country=g("f-country"), air=g("f-airline"), from=g("f-from"), to=g("f-to");
   const maxP=+g("f-price"), maxN=+g("f-nights"), onlyDeal=c("f-deal"), onlyAtl=c("f-atl"), onlyCabin=c("f-cabin");
 
   state.filtered = state.all.filter(d=>{
     if(state.tier!=="all" && d.tier!==state.tier) return false;
     if(origin && d.origin!==origin) return false;
     if(city && d.city!==city) return false;
+    if(country && d.country!==country) return false;
     if(air && d.airline!==air) return false;
     if(from && d.departure_at<from) return false;
     if(to && d.return_at && d.return_at>to) return false;
