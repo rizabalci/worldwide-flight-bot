@@ -1358,6 +1358,9 @@ def scan_watchlist(history: dict, today: str) -> str | None:
     for dest, label, best, lo, target, is_deal, trend in rows:
         if best is None:
             lines.append(f"<b>{label}</b>: no fares found (target €{target})")
+            lines.append("")
+            lines.append("<code>──────────</code>")
+            lines.append("")
             continue
         arrow = "↔"
         price = best["price"]
@@ -1375,6 +1378,9 @@ def scan_watchlist(history: dict, today: str) -> str | None:
             line += f' · <a href="{best["link"]}">book</a>'
         line += f"\n   🗓 best season: {season_note(dest)}"
         lines.append(line)
+        lines.append("")
+        lines.append("<code>──────────</code>")
+        lines.append("")
     return "\n".join(lines).strip()
 
 
