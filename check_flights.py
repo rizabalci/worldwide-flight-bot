@@ -1278,19 +1278,19 @@ def build_digest(deals: list, header: str) -> str | None:
     if lows:
         lines.append("🏆 <b>All-time lows</b>")
         lines.append("")
-        lines += ["\n".join([fmt_deal(d), "", ""]) for d in lows]
+        lines += ["\n".join([fmt_deal(d), "", "<code>──────────</code>", ""]) for d in lows]
         if big or cheap:
             lines.append("")
     if big:
         lines.append("🔥 <b>Big drops vs recent average</b>")
         lines.append("")
-        lines += ["\n".join([fmt_deal(d), "", ""]) for d in big]
+        lines += ["\n".join([fmt_deal(d), "", "<code>──────────</code>", ""]) for d in big]
         if cheap:
             lines.append("")
     if cheap:
         lines.append("✅ <b>Below target</b>")
         lines.append("")
-        lines += ["\n".join([fmt_deal(d), "", ""]) for d in cheap]
+        lines += ["\n".join([fmt_deal(d), "", "<code>──────────</code>", ""]) for d in cheap]
     # Footer: only show the baggage reminder if any deal involves a hinted carrier.
     if any(d["airline"].upper() in _HAND_LUGGAGE_CARRIERS for d in deals):
         lines.append("")
