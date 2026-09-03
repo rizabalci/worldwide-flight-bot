@@ -445,7 +445,6 @@ LONG_HAUL_DESTINATIONS = {
     "TBS": ("Tbilisi", 200),
     "KUT": ("Kutaisi (Wizz hub)", 80),
     "BUS": ("Batumi", 320),
-    "EVN": ("Yerevan", 80),
     "GYD": ("Baku", 190),
     "TAS": ("Tashkent", 430),
     "SKD": ("Samarkand", 620),
@@ -511,10 +510,6 @@ LONG_HAUL_DESTINATIONS = {
     "KTM": ("Kathmandu", 760),
     "CMB": ("Colombo (eVisa)", 560),
     "MLE": ("Maldives", 620),
-    "DAC": ("Dhaka", 330),
-    "ISB": ("Islamabad", 670),
-    "LHE": ("Lahore", 640),
-    "KHI": ("Karachi", 570),
     # --- North America (visa needed) ---
     "JFK": ("New York JFK (visa)", 570),
     "EWR": ("New York Newark (visa)", 590),
