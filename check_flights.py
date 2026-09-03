@@ -145,6 +145,8 @@ SHORT_HAUL_DESTINATIONS = {
     "MAN": ("Manchester (visa)", 120),
     "EDI": ("Edinburgh (visa)", 60),
     "GLA": ("Glasgow (visa)", 70),
+    "ABZ": ("Aberdeen (visa)", 100),
+    "INV": ("Inverness (visa)", 110),
     "BHX": ("Birmingham (visa)", 60),
     "BRS": ("Bristol (visa)", 70),
     "EMA": ("East Midlands (visa)", 70),
@@ -154,10 +156,13 @@ SHORT_HAUL_DESTINATIONS = {
     "SOU": ("Southampton (visa)", 95),
     "BFS": ("Belfast Intl (visa)", 80),
     "BHD": ("Belfast City (visa)", 90),
+    "LDY": ("Derry (visa)", 100),
     # --- Ireland ---
     "DUB": ("Dublin", 50),
     "ORK": ("Cork", 70),
     "SNN": ("Shannon", 80),
+    "NOC": ("Knock", 90),
+    "KIR": ("Kerry", 100),
     # --- Italy ---
     "FCO": ("Rome Fiumicino", 30),
     "CIA": ("Rome Ciampino", 30),
@@ -1049,8 +1054,8 @@ def baggage_hint(airline: str) -> str:
 
 
 COUNTRY_MAP = {
- **{c:"UK" for c in "LHR LGW STN LTN LCY MAN EDI GLA BHX BRS EMA LBA LPL NCL SOU BFS BHD".split()},
- **{c:"Ireland" for c in "DUB ORK SNN".split()},
+ **{c:"UK" for c in "LHR LGW STN LTN LCY MAN EDI GLA ABZ INV BHX BRS EMA LBA LPL NCL SOU BFS BHD LDY".split()},
+ **{c:"Ireland" for c in "DUB ORK SNN NOC KIR".split()},
  **{c:"Italy" for c in "FCO CIA MXP BGY LIN TRN RMI BLQ FLR PSA VCE TSF VRN TRS GOA AOI PSR NAP BRI SUF CTA PMO TPS OLB CAG AHO".split()},
  **{c:"Spain" for c in "BCN GRO REU ZAZ VLL RGS MAD VLC ALC MJV AGP GRX LEI SVQ BJZ BIO EAS SDR OVD LEN SCQ VGO PMI IBZ MAH TFS TFN LPA ACE FUE".split()},
  **{c:"Portugal" for c in "LIS OPO FAO FNC PDL".split()},
