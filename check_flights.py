@@ -814,6 +814,7 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
                         "departure_at": dep,
                         "return_at": ret,
                         "nights": nights,
+                        "transfers": item.get("transfers"),
                         "link": AVIASALES + item.get("link", "") if item.get("link") else None,
                     }
         time.sleep(_pacing_seconds)
@@ -855,6 +856,7 @@ def get_cheapest(origin: str, destination: str, cfg: dict) -> dict | None:
                             "departure_at": dep,
                             "return_at": ret,
                             "nights": nights,
+                            "transfers": item.get("transfers"),
                             "link": AVIASALES + item.get("link", "") if item.get("link") else None,
                             "broad": True,  # found outside the normal month window
                         }
@@ -1171,6 +1173,16 @@ def city_label(dest: str, city: str) -> str:
     return f"{city} ({country})"
 
 
+def stops_label(transfers) -> str:
+    if transfers is None:
+        return ""
+    if transfers == 0:
+        return " · direct"
+    if transfers == 1:
+        return " · 1 stop"
+    return f" · {transfers} stops"
+
+
 def fmt_deal(d: dict) -> str:
     arrow = d["cfg"]["arrow"]
     city = d["city"]
@@ -1192,7 +1204,7 @@ def fmt_deal(d: dict) -> str:
         tag += f"  (target €{target})"
     if d["big_drop"]:
         tag += f"  ↓ from €{int(d['avg'])} avg"
-    line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}{baggage_hint(air)}"
+    line = f"<b>{city}</b> {origin}{arrow} €{price}{tag}\n   {when} · {air}{stops_label(d.get('transfers'))}{baggage_hint(air)}"
     if d["link"]:
         line += f' · <a href="{d["link"]}">book</a>'
     if d.get("broad"):
@@ -1270,6 +1282,7 @@ def scan_tier(cfg: dict, destinations: dict, history: dict, today: str) -> tuple
                     "departure_at": cheapest["departure_at"],
                     "return_at": cheapest["return_at"],
                     "nights": cheapest.get("nights"),
+                    "transfers": cheapest.get("transfers"),
                     "broad": cheapest.get("broad", False),
                     "link": cheapest["link"],
                     "below_target": below_target,
@@ -1403,7 +1416,7 @@ def scan_watchlist(history: dict, today: str) -> str | None:
         line = (
             f"<b>{label}</b> {best['origin']}{arrow} <b>€{price}</b>{trend}"
             f"  (target €{target}){flag}{lo_str}\n"
-            f"   {when} · {best['airline']}{baggage_hint(best['airline'])}"
+            f"   {when} · {best['airline']}{stops_label(best.get('transfers'))}{baggage_hint(best['airline'])}"
         )
         if best["link"]:
             line += f' · <a href="{best["link"]}">book</a>'
@@ -1435,6 +1448,7 @@ def write_site_data(short_deals, long_deals, origins_list):
                 "departure_at": d.get("departure_at"),
                 "return_at": d.get("return_at"),
                 "nights": d.get("nights"),
+                "transfers": d.get("transfers"),
                 "link": d.get("link"),
                 "is_deal": d.get("is_deal", False),
                 "below_target": d.get("below_target", False),
